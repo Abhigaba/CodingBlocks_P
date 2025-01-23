@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task List</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.7/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+
+            border-radius: 5px;
+        }
+        button {
+            margin-left: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">Task List</h1>
+        <form id="addTaskForm" class="d-flex mb-3">
+            <input 
+                type="text" 
+                id="taskName" 
+                class="form-control me-2" 
+                placeholder="Enter task name" 
+                required 
+            />
+            <button type="submit" class="btn btn-primary">Add Task</button>
+        </form>
+        <ul id="taskList" class="list-unstyled">
+           
+        </ul>
+    </div>
+
+    <script  src="./script.js">
+         </script>
+</body>
+</html>

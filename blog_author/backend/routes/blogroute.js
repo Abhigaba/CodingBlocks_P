@@ -6,7 +6,21 @@ const blogRouter = express.Router()
 blogRouter.get('/fetch', async (req, res) => {
     
     try {
-    const blogs = await blogModel.find({})
+    const blogs = await blogModel.find({}).populate('author', 'name imageUrl')
+    res.json({
+        message: 'blogs fetched succesfully',
+        data : blogs
+    })
+    }
+    catch(error) {
+        res.status(500).send("Internal Server error")
+    }
+})
+
+blogRouter.get('/fetch/:id', async (req, res) => {
+    
+    try {
+    const blogs = await blogModel.findOne({_id: req.params.id}).populate('author', 'name')
     res.json({
         message: 'blogs fetched succesfully',
         data : blogs
@@ -28,7 +42,7 @@ blogRouter.post('/add', async (req, res) => {
             throw new Error('No author exists');
         }
 
-        const newBlog =  new blogModel({title, author, content});
+        const newBlog =  new blogModel({title, author, content, });
         await newBlog.save();
 
         res.json({
@@ -47,7 +61,7 @@ blogRouter.patch('/update/:id', async (req, res) => {
     try {
         const body = req.body ; 
         const id = req.params.id
-        await blogModel.findByIdAndUpdate(id, body); 
+        await blogModel.findByIdAndUpdate(id, body,{runValidators: true}); 
 
         res.json({
             message: 'User saved successfully'

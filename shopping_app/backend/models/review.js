@@ -38,8 +38,8 @@ const reviewSchema = new mongoose.Schema({
 }
 )
 
-const cart = mongoose.model('cart', cartSchema); 
+const review = mongoose.model('review', reviewSchema); 
 
 module.exports = {
-    cart
+    review
 }

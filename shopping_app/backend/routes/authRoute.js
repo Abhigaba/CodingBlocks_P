@@ -3,7 +3,7 @@ const {suser} = require()
 const {signUp, validatePassword} = require('../helper/authHelper')
 
 
-const authrouter = express.Router() 
+const authRouter = express.Router() 
 
 authrouter.post('/signup', async (req, res) => {
 
@@ -50,4 +50,4 @@ authrouter.get('/logout', (req, res) => {
     })
 })
 
-module.exports = {authrouter}
+module.exports = {authRouter}

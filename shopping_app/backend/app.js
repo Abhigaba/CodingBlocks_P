@@ -3,14 +3,20 @@ const {connectdb} = require('./utils/database');
 const {authRouter} = require('./routes/authRoute')
 const {cartRouter} = require('./routes/cartRoute')
 const {productRouter} = require('./routes/productRoute')
+const {reviewRouter} = require('./routes/reviewRoute')
+const cookieParser = require('cookie-parser')
 
 const app = express();
+
+
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/auth', authRouter);
 app.use('/cart', cartRouter);
 app.use('/product', productRouter);
+app.use('/review', reviewRouter)
 
 connectdb()
     .then(() => {

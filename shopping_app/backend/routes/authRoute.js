@@ -1,11 +1,11 @@
 const express = require('express') 
-const {suser} = require()
+const {suser} = require('../models/user')
 const {signUp, validatePassword} = require('../helper/authHelper')
 
 
 const authRouter = express.Router() 
 
-authrouter.post('/signup', async (req, res) => {
+authRouter.post('/signup', async (req, res) => {
 
     try{
         
@@ -23,7 +23,7 @@ authrouter.post('/signup', async (req, res) => {
 })
 
 
-authrouter.post('/login',async (req, res) => {
+authRouter.post('/login',async (req, res) => {
 
     try { 
 
@@ -35,7 +35,11 @@ authrouter.post('/login',async (req, res) => {
         const token = await validatePassword(findUser, password)   
         
         res.cookie('token',token, {expires: new Date(Date.now() + 8*3600000) })
-        res.send('Login successful');
+        res.json({
+            message: 'Login successful',
+            data: {email: findUser.email, name : findUser.name}
+        }
+        );
     }
     catch(error) {
         res.status(401).send('Invalid Credentials');
@@ -43,11 +47,11 @@ authrouter.post('/login',async (req, res) => {
 })
 
 
-authrouter.get('/logout', (req, res) => {
+authRouter.get('/logout', async (req, res) => {
     res.cookie('token', null, {expires: new Date(Date.now())})
     res.json({
         message: "Logout Successful"
     })
 })
 
-module.exports = {authRouter}
+module.exports = {authRouter : authRouter}

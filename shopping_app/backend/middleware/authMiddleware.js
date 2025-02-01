@@ -24,3 +24,5 @@ const authMiddle = async (req, res, next) => {
     }
 
 }
+
+module.exports = {authMiddle}

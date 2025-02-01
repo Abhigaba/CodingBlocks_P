@@ -35,6 +35,10 @@ const productSchema = new mongoose.Schema({
         minLength : 10,
         required: true,
     },
+    imageUrl : {
+        type : String ,
+        required : true ,
+    }
 
 },   {
     timestamps: true

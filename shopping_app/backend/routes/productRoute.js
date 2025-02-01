@@ -4,32 +4,23 @@ const {product} = require('../models/product')
 
 const productRouter = express.Router(); 
 
-productRouter.get('/fetch:id', async (req, res) =>{
-
+productRouter.get('/fetch', async (req, res) =>{
+    
     try {
-        if (req.params.id) {
-
-            const productItem = await product.findById(req.params.id)
-                .select('-owner_id');
-            
-            if (!productItem) {
-                return res.status(404).json({ message: 'Product not found' });
-            }
-            res.json(productItem);
-
-        } else {
-            
             const page = parseInt(req.query.page) || 1;  
             const limit = parseInt(req.query.limit) || 10;  
             const skip = (page - 1) * limit;
 
             const totalProducts = await product.countDocuments();
 
+            
             const products = await product.find({})
-                .select('-owner_Id')
+                .select('-owner_id')
                 .skip(skip)
                 .limit(limit);
             
+            if (products.length == 0) {throw new Error('No products available') }
+
             res.json({
                 message: 'Products fetched successfully',
                 products,
@@ -42,13 +33,13 @@ productRouter.get('/fetch:id', async (req, res) =>{
                     hasPrevPage: page > 1
                 }
             });
-        }
+        
     } catch (error) {
         res.status(500).json({ message: 'Error fetching products', error: error.message });
     }
 })
 
-productRouter.post('/add',async  (req, res) => {
+productRouter.post('/add',authMiddle, async  (req, res) => {
     try {
 
         if (!req.user.isAdmin) {
@@ -57,12 +48,12 @@ productRouter.post('/add',async  (req, res) => {
 
 
         const newProduct = new product({
-            ...req.body
+            ...req.body, owner_id : req.user._id
         });
 
         const savedProduct = await newProduct.save();
         res.json({
-            message: 'Producr added successfully',
+            message: 'Product added successfully',
             
         });
     } catch (error) {
@@ -70,7 +61,7 @@ productRouter.post('/add',async  (req, res) => {
     }
 })
 
-productRouter.patch('/update:id', authMiddle, async (req, res) => {
+productRouter.patch('/update/:id', authMiddle, async (req, res) => {
     try {
 
         if (!req.user.isAdmin) {

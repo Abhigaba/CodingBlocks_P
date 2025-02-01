@@ -18,7 +18,7 @@ const validatePassword = async (findUser, password) => {
     try { 
         const correctPass = await bcrypt.compare(password,findUser.password);
         if (!correctPass) {throw new Error('Invalid Credentials')}
-        const token = await jwt.sign({ _id: findUser._id },'shhhhh',{expiresIn: '7h'});
+        const token =  jwt.sign({ _id: findUser._id },'shhhhh',{expiresIn: '7h'});
         return token
     }
     catch(error) { 

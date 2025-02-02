@@ -40,7 +40,6 @@ export const ProductContextProvider = ({ children }) => {
       setPage(pageNumber);
     } catch (err) {
       setError(err.message);
-      console.error('Error fetching  Home:', err);
     } finally {
       setLoading(false);
     }

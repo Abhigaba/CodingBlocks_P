@@ -1,12 +1,23 @@
 import {LazyImage} from "./LazyImage"
 import { ShoppingBag,  Heart } from 'lucide-react';
-
+import { useCartContext } from "../contexts/useCartContext";
+import { useAuthContext } from "../contexts/useAuthContext";
 
 export const ProductCard = ({ product }) => {
+
+  const {info} = useAuthContext()
+
   const calculateDiscountedPrice = (originalPrice, discount) => {
     if (!discount) return originalPrice;
     return originalPrice - (originalPrice * (discount / 100));
   };
+  
+  const {addToCart} = useCartContext()
+
+  const handleAddtoCart = () => {
+    if (info._id){
+      addToCart(product)}
+  }
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
@@ -27,9 +38,9 @@ export const ProductCard = ({ product }) => {
           </button>
         </div>
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-          <button className="opacity-0 group-hover:opacity-100 bg-white text-black px-6 py-2 rounded-full flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+          <button onClick={() => handleAddtoCart()} className="opacity-0 group-hover:opacity-100 bg-white text-black px-6 py-2 rounded-full flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
             <ShoppingBag className="w-4 h-4" />
-            Add to Cart
+    
           </button>
         </div>
       </div>

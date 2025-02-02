@@ -4,10 +4,13 @@ import { ChevronRight } from 'lucide-react';
 import { useProductContext } from './contexts/useProductConext';
 import { LoadingScreen } from './components/LoadinScreen';
 import { ProductCard } from './components/ProductCard';
-import {LazyImage} from "./components/LazyImage"
-import {Navbar} from "./components/Navbar"
+import {LazyImage} from "./components/LazyImage";
+import {Footer} from  "./components/Footer";
+import { Navbar } from './components/Navbar';
+
 
 const Home = () => {
+  
   const { products, loading, error, hasMore, loadMore, refetchProducts } = useProductContext();
   const featuredProducts = products.slice(0, 4);
   if (error) {
@@ -110,6 +113,7 @@ const Home = () => {
         </div>
       </div>
       </div>
+      <Footer></Footer>
     </>
   );
 };

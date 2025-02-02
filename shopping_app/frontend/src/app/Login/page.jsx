@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Eye, EyeOff, LogIn, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useRouter } from 'next/navigation';
+import { useAuthContext } from '../contexts/useAuthContext';
 import Link from 'next/link';
 
 const page = () => {
@@ -13,6 +14,7 @@ const page = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const {info, setinfo} = useAuthContext() ;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,6 +28,7 @@ const page = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ email, password }),
+        credentials: "include"
       });
 
       if (!response.ok) {
@@ -33,6 +36,8 @@ const page = () => {
       }
 
       const data = await response.json();
+    
+      setinfo((prev) => ({name: data.data.name, email: data.data.email, isAdmin: data.data.isAdmin, _id : data.data.user_id }));
       router.push('/')
       
     } catch (err) {

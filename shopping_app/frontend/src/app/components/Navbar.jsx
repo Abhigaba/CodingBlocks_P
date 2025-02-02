@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
   Home, 
   LogOut, 
@@ -7,32 +7,77 @@ import {
   Heart, 
   LayoutDashboard, 
   Menu, 
-  X, 
-  ChevronDown 
+  X,LogIn
 } from 'lucide-react';
+import { useAuthContext } from '../contexts/useAuthContext';
+import { toast } from 'react-hot-toast';
+import {useRouter} from 'next/navigation';
 
 export const Navbar = () => {
+  const router = useRouter()
+  const {info, setinfo} = useAuthContext();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [cartCount] = useState(3); // Example cart count
-  const [wishlistCount] = useState(2); // Example wishlist count
-  const [isAdmin] = useState(true); // Example admin status
-
-  // Handle scroll effect
+  const [cartCount] = useState(3);
+  const [wishlistCount] = useState(2);
+  const [isAdmin] = useState(true);
+  const observerRef = useRef(null);
+  
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    // Create intersection observer
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setIsScrolled(!entry.isIntersecting);
+      },
+      { threshold: 1.0 }
+    );
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+
+    // Create and add sentinel element
+    const sentinel = document.createElement('div');
+    sentinel.style.position = 'absolute';
+    sentinel.style.top = '20px';
+    sentinel.style.height = '1px';
+    sentinel.style.width = '100%';
+    sentinel.style.pointerEvents = 'none';
+    document.body.appendChild(sentinel);
+
+    observer.observe(sentinel);
+    observerRef.current = { observer, sentinel };
+    
+    // Cleanup
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.observer.disconnect();
+        observerRef.current.sentinel.remove();
+      }
+    };
   }, []);
 
-  const NavLink = ({ href, icon: Icon, label, count }) => (
+  const handleCartClick = (e) => {
+    e.preventDefault();
+    if (!info?.name) {
+      toast.error('Please login to view your cart', {
+        duration: 3000,
+        position: 'top-center',
+      });
+      return;
+    }
+    router.push('/Cart');
+  };
+
+  const handleLogout = async () => {
+    await fetch('http://localhost:3000/auth/logout');
+    setinfo({name: "", email: "", isAdmin:false});
+  };
+
+  // Memoized NavLink component to prevent unnecessary re-renders
+  const NavLink = ({ href, icon: Icon, label, count, onClick }) => (
     <a
       href={href}
       className="flex items-center px-4 py-2 text-gray-700 hover:text-indigo-600 transition-colors duration-200
                  lg:px-3 group relative"
+      onClick={onClick}
     >
       <Icon className="h-5 w-5 lg:mr-2 shrink-0" />
       <span className="ml-3 lg:ml-0">{label}</span>
@@ -45,6 +90,7 @@ export const Navbar = () => {
                      transition-transform duration-300 group-hover:scale-x-100" />
     </a>
   );
+
 
   return (
     <nav className={`fixed top-0 inset-x-0 z-50 transition-all duration-300 ${
@@ -74,21 +120,41 @@ export const Navbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden lg:flex lg:items-center lg:space-x-4">
             <NavLink href="/" icon={Home} label="Home" />
-            <NavLink href="/cart" icon={ShoppingCart} label="Cart" count={cartCount} />
+            <NavLink 
+              href="/cart" 
+              icon={ShoppingCart} 
+              label="Cart" 
+              count={cartCount}
+              onClick={handleCartClick}
+            />
             <NavLink href="/wishlist" icon={Heart} label="Wishlist" count={wishlistCount} />
-            {isAdmin && (
-              <NavLink href="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+            {info.isAdmin ==='admin' && (
+              <NavLink href="/Dashboard" icon={LayoutDashboard} label="Dashboard" />
             )}
-            <button
-              className="flex items-center px-4 py-2 text-gray-700 hover:text-indigo-600 transition-colors duration-200"
-              onClick={() => console.log('Logout clicked')}
-            >
-              <LogOut className="h-5 w-5 mr-2" />
-              <span>Logout</span>
-            </button>
-          </div>
+            {info.name ? (
+                <button
+                  className="flex items-center px-4 py-2 text-gray-700 hover:text-indigo-600 
+                            transition-colors duration-200 border border-gray-300 rounded-md
+                            hover:border-indigo-600 focus:outline-none focus:ring-2 
+                            focus:ring-indigo-500 focus:border-transparent"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="h-5 w-5 mr-2" />
+                  <span>Logout</span>
+                </button>
+              ) : (
+                <button
+                  className="flex items-center px-4 py-2 text-gray-700 hover:text-indigo-600 
+                            transition-colors duration-200 border border-gray-300 rounded-md
+                            hover:border-indigo-600 focus:outline-none focus:ring-2 
+                            focus:ring-indigo-500 focus:border-transparent"
+                  onClick={() => router.push('/Login')}
+                >
+                  <LogIn className="h-5 w-5 mr-2" />
+                  <span>Sign In</span>
+                </button>
+              )}  </div>
 
-          {/* Mobile menu button */}
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="lg:hidden p-2 rounded-md text-gray-700 hover:text-indigo-600 hover:bg-gray-100 
@@ -104,7 +170,6 @@ export const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Navigation */}
       <div className={`lg:hidden transition-all duration-300 ease-in-out ${
         isMobileMenuOpen 
           ? 'max-h-96 opacity-100 visible' 
@@ -112,22 +177,36 @@ export const Navbar = () => {
       }`}>
         <div className="px-2 pt-2 pb-3 space-y-1 bg-white shadow-lg">
           <NavLink href="/" icon={Home} label="Home" />
-          <NavLink href="/cart" icon={ShoppingCart} label="Cart" count={cartCount} />
+          <NavLink 
+            href="/cart" 
+            icon={ShoppingCart} 
+            label="Cart" 
+            count={cartCount}
+            onClick={handleCartClick}
+          />
           <NavLink href="/wishlist" icon={Heart} label="Wishlist" count={wishlistCount} />
-          {isAdmin && (
-            <NavLink href="/dashboard" icon={LayoutDashboard} label="Dashboard" />
+          {info.isAdmin === 'admin' && (
+            <NavLink href="/Dashboard" icon={LayoutDashboard} label="Dashboard" />
           )}
-          <button
-            className="flex items-center w-full px-4 py-2 text-gray-700 hover:text-indigo-600 
-                       transition-colors duration-200"
-            onClick={() => console.log('Logout clicked')}
-          >
-            <LogOut className="h-5 w-5 mr-2" />
-            <span>Logout</span>
-          </button>
+          {info.name ?
+            <button
+              className="flex items-center w-full px-4 py-2 text-gray-700 hover:text-indigo-600 
+                         transition-colors duration-200"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-5 w-5 mr-2" />
+              <span>Logout</span>
+            </button>
+          :  <button
+          className="flex items-center w-full px-4 py-2 text-gray-700 hover:text-indigo-600 
+                     transition-colors duration-200"
+          onClick={() => router.push('/Login')}
+        >
+          <LogIn className="h-5 w-5 mr-2" />
+          <span>Sign In</span>
+        </button>}
         </div>
       </div>
     </nav>
   );
 };
-

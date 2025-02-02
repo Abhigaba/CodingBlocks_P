@@ -4,17 +4,16 @@ const {cart} = require('../models/cart')
 
 const cartRouter = express.Router()
 
-cartRouter.get('/fetch', async (req, res) =>{
+cartRouter.get('/fetch/:id', async (req, res) =>{
 
     try {
             {
-            const products = await cart.find({})
-            
+            const products = await cart.find({user_id: req.params.id}).populate('product_id', 'name brand price discount imageUrl').select('product_id, quantity _id')
+
             res.json({
                 message: 'Products fetched successfully',
-                products,
+                data:products,
             });
-
         }
     } catch (error) {
         res.status(500).json({ message: 'Error fetching cart', error: error.message });
@@ -25,28 +24,28 @@ cartRouter.post('/add',async  (req, res) => {
     try {
 
         const newProduct = new cart({
-            ...req.body
+            product_id: req.body.product_id ,
+            user_id: req.body.user_id,
+            quantity: 1,
         });
 
         await newProduct.save();
         res.json({
-            message: 'Producr added successfully',
+            message: 'Product added successfully',
+            data : {_id: newProduct._id , quantity: 1},
         });
+
     } catch (error) {
         res.status(500).json({ message: 'Error adding cart', error: error.message });
     }
 })
 
-cartRouter.patch('/update:id', authMiddle, async (req, res) => {
+cartRouter.patch('/update/:id', authMiddle, async (req, res) => {
     try {
-
-        if (!req.user.isAdmin) {
-            return res.status(403).json({ message: 'Admin access required' });
-        }
 
         const updatedProduct = await cart.findByIdAndUpdate(
             req.params.id,
-            { $set: req.body },
+            {quantity: req.body.quantity},
         )
 
         if (!updatedProduct) {

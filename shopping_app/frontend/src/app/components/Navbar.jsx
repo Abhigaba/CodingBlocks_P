@@ -12,6 +12,7 @@ import {
 import { useAuthContext } from '../contexts/useAuthContext';
 import { toast } from 'react-hot-toast';
 import {useRouter} from 'next/navigation';
+import Link from 'next/link';
 
 export const Navbar = () => {
   const router = useRouter()
@@ -73,7 +74,7 @@ export const Navbar = () => {
 
   // Memoized NavLink component to prevent unnecessary re-renders
   const NavLink = ({ href, icon: Icon, label, count, onClick }) => (
-    <a
+    <Link
       href={href}
       className="flex items-center px-4 py-2 text-gray-700 hover:text-indigo-600 transition-colors duration-200
                  lg:px-3 group relative"
@@ -88,7 +89,7 @@ export const Navbar = () => {
       )}
       <span className="absolute inset-x-0 -bottom-0.5 h-0.5 bg-indigo-600 transform origin-left scale-x-0 
                      transition-transform duration-300 group-hover:scale-x-100" />
-    </a>
+    </Link>
   );
 
 

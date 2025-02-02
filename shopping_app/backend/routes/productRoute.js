@@ -1,7 +1,6 @@
 const express = require('express');
-const {authMiddle} = require('../middleware/authMiddleware')
-const {product} = require('../models/product')
-
+const {authMiddle} = require('../middleware/authMiddleware');
+const {product} = require('../models/product');
 const productRouter = express.Router(); 
 
 productRouter.get('/fetch', async (req, res) =>{
@@ -39,6 +38,25 @@ productRouter.get('/fetch', async (req, res) =>{
     }
 })
 
+productRouter.get('/admin/fetch/:id', authMiddle, async(req, res) => {
+    
+    try {
+    if (!req.user.isAdmin) {
+        return res.status(403).json({ message: 'Admin access required' });
+    } 
+
+    const products = await product.find({owner_id: req.params.id})
+
+    res.json({
+        message: "Products fetched successfully",
+        data: products
+    })}
+    catch(error) {
+        res.status(400).send(error.message);
+    }
+    
+})
+
 productRouter.post('/add',authMiddle, async  (req, res) => {
     try {
 
@@ -64,7 +82,7 @@ productRouter.post('/add',authMiddle, async  (req, res) => {
 productRouter.patch('/update/:id', authMiddle, async (req, res) => {
     try {
 
-        if (!req.user.isAdmin) {
+        if (req.user.isAdmin !== 'admin') {
             return res.status(403).json({ message: 'Admin access required' });
         }
 

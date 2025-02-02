@@ -5,7 +5,6 @@ const authMiddle = async (req, res, next) => {
 
     try { 
 
-
         const {token} = req.cookies;
         
         if (!token) { 

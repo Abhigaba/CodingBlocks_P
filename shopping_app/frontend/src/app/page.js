@@ -1,5 +1,5 @@
 "use client"
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { useProductContext } from './contexts/useProductConext';
 import { LoadingScreen } from './components/LoadinScreen';
@@ -13,6 +13,11 @@ const Home = () => {
   
   const { products, loading, error, hasMore, loadMore, refetchProducts } = useProductContext();
   const featuredProducts = products.slice(0, 4);
+
+  useEffect(() => {
+    refetchProducts()
+  }, [])
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center">

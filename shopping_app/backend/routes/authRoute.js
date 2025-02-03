@@ -12,7 +12,7 @@ authRouter.post('/signup', async (req, res) => {
         const user =  new suser({...req.body, password: hashedPassword});
 
         await user.save();
-        res.send('Sign up successful')
+        res.json({message:'Sign up successful'})
         }
     catch(error) {
         res.status(401).send(error.message);

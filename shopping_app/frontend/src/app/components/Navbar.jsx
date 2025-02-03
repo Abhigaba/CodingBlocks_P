@@ -10,9 +10,10 @@ import {
   X,LogIn
 } from 'lucide-react';
 import { useAuthContext } from '../contexts/useAuthContext';
-import { toast } from 'react-hot-toast';
+import { toast } from '@/hooks/use-toast';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
+import { useCartContext } from '../contexts/useCartContext';
 
 export const Navbar = () => {
   const router = useRouter()
@@ -23,7 +24,7 @@ export const Navbar = () => {
   const [wishlistCount] = useState(2);
   const [isAdmin] = useState(true);
   const observerRef = useRef(null);
-  
+  const {cart} = useCartContext();
   useEffect(() => {
     // Create intersection observer
     const observer = new IntersectionObserver(
@@ -34,7 +35,6 @@ export const Navbar = () => {
     );
 
 
-    // Create and add sentinel element
     const sentinel = document.createElement('div');
     sentinel.style.position = 'absolute';
     sentinel.style.top = '20px';
@@ -125,7 +125,7 @@ export const Navbar = () => {
               href="/cart" 
               icon={ShoppingCart} 
               label="Cart" 
-              count={cartCount}
+              count={cart.length}
               onClick={handleCartClick}
             />
             <NavLink href="/wishlist" icon={Heart} label="Wishlist" count={wishlistCount} />

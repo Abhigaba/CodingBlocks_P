@@ -16,7 +16,7 @@ const cartContext = createContext({
 export const CartProvider = ({children}) => {
 
     const {info} = useAuthContext()
-    const[cart, setCart] = useState() 
+    const[cart, setCart] = useState([]) 
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -43,7 +43,7 @@ export const CartProvider = ({children}) => {
       };
 
 
-      const addToCart = async (product) => {
+      const addToCart = async (product, quantity = 1) => {
         try {
           setLoading(true);
           const existingItemIndex = cart.findIndex(
@@ -57,7 +57,7 @@ export const CartProvider = ({children}) => {
             const response = await axios.post(`http://localhost:3000/cart/add`, {
               user_id: info._id,
               product_id: product._id,
-              quantity: 1
+              quantity: parseInt(quantity)
             },{ withCredentials: true });
             
             const item = {

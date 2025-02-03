@@ -2,9 +2,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useProductContext } from '@/app/contexts/useProductConext';
+import { useCartContext } from '@/app/contexts/useCartContext';
 import { useAuthContext } from '@/app/contexts/useAuthContext';
 import { SizeSelector } from '@/app/components/SizeSelector';
-import axios from 'axios';
 import { QuantitySelector } from '@/app/components/QuantitySelector';
 import { Button } from "@/components/ui/button";
 import { useToast } from '@/hooks/use-toast';
@@ -12,6 +12,9 @@ import { Navbar } from '@/app/components/Navbar';
 import ProductReviews from '@/app/components/ProductReview';
 import { Footer } from '@/app/components/Footer';
 const ProductDetails = () => {
+
+  const {addToCart} = useCartContext()
+
   const { id } = useParams();
   const { info } = useAuthContext();
   const { products } = useProductContext();
@@ -75,7 +78,8 @@ const ProductDetails = () => {
 
           <Button 
             className="w-full"
-            disabled={!selectedSize}
+            disabled={!selectedSize || !info._id}
+            onClick= {() => addToCart(product, quantity)}
           >
             Add to Cart
           </Button>

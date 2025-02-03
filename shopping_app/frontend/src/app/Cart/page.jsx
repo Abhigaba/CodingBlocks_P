@@ -8,6 +8,7 @@ import { useAuthContext } from '../contexts/useAuthContext';
 
 
 const CartContent = () => {
+  const router = useRouter()
   const {info} = useAuthContext()
   const { 
     cart, 
@@ -69,7 +70,7 @@ const CartContent = () => {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-2">Your cart is empty</h3>
               <p className="text-gray-500 mb-6">Looks like you haven't added any items to your cart yet.</p>
-              <button onClick={() => router.push('../')} className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
+              <button onClick={() => router.push('/')} className="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 transition-colors">
                 Start Shopping
               </button>
             </div>

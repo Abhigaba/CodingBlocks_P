@@ -26,16 +26,17 @@ cartRouter.post('/add',async  (req, res) => {
         const newProduct = new cart({
             product_id: req.body.product_id ,
             user_id: req.body.user_id,
-            quantity: 1,
+            quantity: req.body.quantity,
         });
 
         await newProduct.save();
         res.json({
             message: 'Product added successfully',
-            data : {_id: newProduct._id , quantity: 1},
+            data : {_id: newProduct._id , quantity: req.body.quantity},
         });
 
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: 'Error adding cart', error: error.message });
     }
 })

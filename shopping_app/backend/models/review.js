@@ -13,26 +13,17 @@ const reviewSchema = new mongoose.Schema({
         ref: 'suser',
         required: true, 
     },
+    rating: {
+        type: Number,
+        required: true,
+    },
 
-    price : {
-        type: Number ,
+    description : {
+        type : String ,
         required: true ,
-    },
-    
-    quantity : {
-        type: Number , 
-        min: 1 ,
-        required: true
-    },
-    
-    status : {
-        type : String,
-        default: "placed",
-        enum: {
-            values: ['shipped', 'deleivered'],
-            message: '{VALUE} is not supported',
-        }
+        minLength : 4,
     }
+
 },   {
     timestamps: true
 }

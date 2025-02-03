@@ -2,25 +2,31 @@ import {LazyImage} from "./LazyImage"
 import { ShoppingBag,  Heart } from 'lucide-react';
 import { useCartContext } from "../contexts/useCartContext";
 import { useAuthContext } from "../contexts/useAuthContext";
+import { useRouter } from "next/navigation";
 
 export const ProductCard = ({ product }) => {
-
-  const {info} = useAuthContext()
-
-  const calculateDiscountedPrice = (originalPrice, discount) => {
-    if (!discount) return originalPrice;
-    return originalPrice - (originalPrice * (discount / 100));
-  };
   
-  const {addToCart} = useCartContext()
+    const router = useRouter()
+    const {info} = useAuthContext()
 
-  const handleAddtoCart = () => {
-    if (info._id){
-      addToCart(product)}
-  }
+    const calculateDiscountedPrice = (originalPrice, discount) => {
+      if (!discount) return originalPrice;
+      return originalPrice - (originalPrice * (discount / 100));
+    };
+    
+    const {addToCart} = useCartContext()
 
+    const handleAddtoCart = (e) => {
+      e.stopPropagation();
+      if (info._id){
+        addToCart(product)}
+    }
+    const handleCardClick = () =>{
+      router.replace(`/Product/${product._id}`)
+    }
+    
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <div onClick={(e) => handleCardClick(e)} className="bg-white rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow duration-300">
       <div className="relative group">
         <LazyImage
           src={product.imageUrl}
@@ -38,7 +44,7 @@ export const ProductCard = ({ product }) => {
           </button>
         </div>
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300 flex items-center justify-center">
-          <button onClick={() => handleAddtoCart()} className="opacity-0 group-hover:opacity-100 bg-white text-black px-6 py-2 rounded-full flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
+          <button onClick={(e) => handleAddtoCart(e)} className="opacity-0 group-hover:opacity-100 bg-white text-black px-6 py-2 rounded-full flex items-center gap-2 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300">
             <ShoppingBag className="w-4 h-4" />
     
           </button>

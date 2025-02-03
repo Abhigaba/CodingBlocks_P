@@ -9,13 +9,11 @@ reviewRouter.get('/:id',  async (req, res) =>{
     try {
         if (req.params.id) {
 
-            const review = await review.find({Review_id:req.params.id}).populate('viewer_id', 'name')
-            
-            if (!review) {
-                return res.status(404).json({ message: 'No reviews' });
-            }
+            const reviews = await review.find({product_id:req.params.id}).populate('viewer_id', 'name _id')
 
-            res.json(review);
+            res.json({
+                data: reviews
+            });
 
         } 
     } catch (error) {
@@ -37,11 +35,12 @@ reviewRouter.post('/add',authMiddle, async  (req, res) => {
         });
 
     } catch (error) {
+        console.log(error.message)
         res.status(500).json({ message: 'Error adding review', error: error.message });
     }
 })
 
-reviewRouter.patch('/update:id', authMiddle, async (req, res) => {
+reviewRouter.patch('/update/:id', authMiddle, async (req, res) => {
     try {
 
         const updatedReview = await review.findByIdAndUpdate(
@@ -64,10 +63,6 @@ reviewRouter.patch('/update:id', authMiddle, async (req, res) => {
 reviewRouter.delete('/delete/:id', authMiddle, async (req, res) =>{
     try {
 
-        if (!req.user.isAdmin) {
-            return res.status(403).json({ message: 'Admin access required' });
-        }
-
         const deletedReview = await review.findByIdAndDelete(req.params.id);
         
         if (!deletedReview) {
@@ -75,6 +70,7 @@ reviewRouter.delete('/delete/:id', authMiddle, async (req, res) =>{
         }
     
         res.json({ message: 'Review deleted successfully' });
+
     } catch (error) {
         res.status(500).json({ message: 'Error deleting review', error: error.message });
     }

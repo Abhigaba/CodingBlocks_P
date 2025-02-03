@@ -29,6 +29,7 @@ export const CartProvider = ({children}) => {
     const fetchCartItems = async (id) => {
         try {
           setLoading(true);
+
           const response = await axios.get(`http://localhost:3000/cart/fetch/${id}`);
           setCart(response.data.data);
           console.log(!response)
@@ -45,7 +46,6 @@ export const CartProvider = ({children}) => {
       const addToCart = async (product) => {
         try {
           setLoading(true);
-
           const existingItemIndex = cart.findIndex(
             item => item.product_id._id === product._id
           );
@@ -137,7 +137,6 @@ export const CartProvider = ({children}) => {
         return { subtotal, shipping, total };
       };
     
-
 
     const value = {
         cart,

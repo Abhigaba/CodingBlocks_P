@@ -28,6 +28,11 @@ export const CartItemCard = ({item, index}) => {
             setcounter(counter + quant)
       } 
 
+      const calculateDiscountedPrice = (originalPrice, discount) => {
+        if (!discount) return originalPrice;
+        return originalPrice - (originalPrice * (discount / 100));
+      };
+      
   return (
     <>
       <motion.li
@@ -80,7 +85,7 @@ export const CartItemCard = ({item, index}) => {
                               ${item.product_id.price.toFixed(2)}
                             </p>
                             <p className="text-lg font-medium text-red-600">
-                              ${calculateItemPrice(item.product_id.price, item.product_id.discount).toFixed(2)}
+                              ${calculateDiscountedPrice(item.product_id.price, item.product_id.discount).toFixed(2)}
                             </p>
                             <p className="text-sm text-red-600">-{item.product_id.discount}% OFF</p>
                           </>

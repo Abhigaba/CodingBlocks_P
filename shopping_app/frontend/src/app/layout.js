@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster"
+
 import { ProductContextProvider } from "./contexts/useProductConext";
 import { AuthProvider } from "./contexts/useAuthContext";
 import { CartProvider } from "./contexts/useCartContext";
@@ -31,6 +33,7 @@ export default function RootLayout({ children }) {
         {children}
         </CartProvider>
         </ProductContextProvider></AuthProvider>
+        <Toaster />
       </body>
     </html>
   );

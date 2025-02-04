@@ -1,4 +1,4 @@
-# 🛍️ Full-Stack Microservices E-Commerce Platform
+# 🛍️ Full-Stack Microservices Shoesole E-Commerce Platform
 
 ## 🚀 Project Overview
 

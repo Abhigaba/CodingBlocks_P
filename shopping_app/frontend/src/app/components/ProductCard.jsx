@@ -3,12 +3,12 @@ import { ShoppingBag,  Heart } from 'lucide-react';
 import { useCartContext } from "../contexts/useCartContext";
 import { useAuthContext } from "../contexts/useAuthContext";
 import { useRouter } from "next/navigation";
-
+import { useToast } from "@/hooks/use-toast";
 export const ProductCard = ({ product }) => {
   
     const router = useRouter()
     const {info} = useAuthContext()
-
+    const {toast} = useToast()
     const calculateDiscountedPrice = (originalPrice, discount) => {
       if (!discount) return originalPrice;
       return originalPrice - (originalPrice * (discount / 100));
@@ -19,7 +19,20 @@ export const ProductCard = ({ product }) => {
     const handleAddtoCart = (e) => {
       e.stopPropagation();
       if (info._id){
-        addToCart(product)}
+        addToCart(product)
+        toast({
+          title: "Success",
+          description : "Item successfully added to cart",
+          variant: "success"
+        })
+      }
+      else {
+        toast({
+          title: "Authentication Required",
+          description : "Please Login to add item to your cart",
+          variant: "destructive"
+        })
+      }
     }
     const handleCardClick = () =>{
       router.replace(`/Product/${product._id}`)

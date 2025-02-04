@@ -10,12 +10,13 @@ import {
   X,LogIn
 } from 'lucide-react';
 import { useAuthContext } from '../contexts/useAuthContext';
-import { toast } from '@/hooks/use-toast';
+import { useToast } from "@/hooks/use-toast"
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import { useCartContext } from '../contexts/useCartContext';
 
 export const Navbar = () => {
+  const { toast } = useToast()
   const router = useRouter()
   const {info, setinfo} = useAuthContext();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -57,10 +58,10 @@ export const Navbar = () => {
 
   const handleCartClick = (e) => {
     e.preventDefault();
-    if (!info?.name) {
-      toast.error('Please login to view your cart', {
-        duration: 3000,
-        position: 'top-center',
+    if (!info?._id) {
+      toast({
+        description : 'Please login to view your cart', 
+        variant: "destructive"
       });
       return;
     }

@@ -79,7 +79,13 @@ const ProductDetails = () => {
           <Button 
             className="w-full"
             disabled={!selectedSize || !info._id}
-            onClick= {() => addToCart(product, quantity)}
+            onClick= {() => {addToCart(product, quantity)
+              toast({
+                title: "Success",
+                description: 'Item added to cart',
+                variant: 'success'
+              })
+            }}
           >
             Add to Cart
           </Button>

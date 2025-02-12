@@ -10,7 +10,7 @@ const cartContext = createContext({
     updateQuantity: () => {},
     addToCart: () => {},
     deleteFromCart: () => {},
-    calculateTotals : () => {}
+    calculateTotals : () => {},
 })
 
 export const CartProvider = ({children}) => {
@@ -97,7 +97,7 @@ export const CartProvider = ({children}) => {
           setCart(prev =>
             prev.map(item =>
               item._id === id
-                ? { ...item, quantity: item.quantity + newQuantity }
+                ? { ...item, quantity:  newQuantity }
                 : item
             )
           );

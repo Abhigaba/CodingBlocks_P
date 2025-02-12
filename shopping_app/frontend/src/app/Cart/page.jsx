@@ -5,15 +5,25 @@ import { ShoppingBag } from 'lucide-react';
 import {CartItemCard} from '../components/CartItemCard';
 import { useRouter } from 'next/navigation';
 import { useAuthContext } from '../contexts/useAuthContext';
-
+import axios from 'axios';
 
 const CartContent = () => {
-  const router = useRouter()
+
   const {info} = useAuthContext()
-  const { 
-    cart, 
-    loading,
-  } = useCartContext();
+
+
+  const [cart, setCart] = useState([])
+  useEffect(() => {
+
+
+    const getCart = async () => {
+    const res = await axios.get(`http://localhost:3000/cart/fetch/${info._id}`);
+    setCart(res.data.data);
+    }
+    getCart();
+  }, [])
+  const router = useRouter()
+  
 
   if (!info._id) {
     router.replace('/');
@@ -23,12 +33,13 @@ const CartContent = () => {
     return discount > 0 ? price * (1 - discount / 100) : price;
   };
   
-  const subtotal = cart.reduce((sum, item) => 
-    sum + calculateItemPrice(item.product_id.price, item.product_id.discount) * item.quantity, 0
-  );
+  const [subtotal, setSubtotal] = useState(0);
   const shipping = 12.99;
-  const tax = subtotal * 0.08;
-  const total = subtotal + shipping + tax;
+  useEffect(() => {
+    console.log(cart)
+    setSubtotal(cart.reduce((sum, item) => 
+    sum + calculateItemPrice(item.product_id.price, item.product_id.discount) * item.quantity, 0))} 
+ , [cart])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -107,11 +118,11 @@ const CartContent = () => {
                     </div>
                     <div className="flex justify-between">
                       <dt className="text-gray-600">Tax</dt>
-                      <dd className="text-gray-900">${tax.toFixed(2)}</dd>
+                      <dd className="text-gray-900">${(subtotal * 0.08).toFixed(2)}</dd>
                     </div>
                     <div className="flex justify-between border-t pt-4">
                       <dt className="text-lg font-medium text-gray-900">Total</dt>
-                      <dd className="text-lg font-medium text-gray-900">${total.toFixed(2)}</dd>
+                      <dd className="text-lg font-medium text-gray-900">${(subtotal + shipping  + subtotal*0.08).toFixed(2)}</dd>
                     </div>
                   </dl>
                   <button className="mt-6 w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2 transition-colors">

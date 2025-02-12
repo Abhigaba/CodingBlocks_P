@@ -21,10 +21,7 @@ export const CartItemCard = ({item, index}) => {
       }
     
       const updateQuant = (id, quant) => {
-
             updateQuantity(id , quant + counter)
-            console.log(id, quant)
-            console.log(item)
             setcounter(counter + quant)
       } 
 

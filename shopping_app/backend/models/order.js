@@ -8,11 +8,6 @@ const orderSchema = new mongoose.Schema({
         required: true, 
     }, 
 
-    name : {
-        type : String, 
-        required: true, 
-    },
-
     buyer_id : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'suser',
@@ -23,6 +18,7 @@ const orderSchema = new mongoose.Schema({
         type: Number ,
         required: true ,
     },
+
     quantity : {
         type: Number , 
         min: 1 ,
@@ -41,8 +37,8 @@ const orderSchema = new mongoose.Schema({
 }
 )
 
-const cart = mongoose.model('cart', cartSchema); 
+const order = mongoose.model('order', orderSchema); 
 
 module.exports = {
-    cart
+    order
 }

@@ -72,7 +72,8 @@ const Home = () => {
               flex items-center gap-2 
               hover:bg-gray-500 transition-colors
               mx-auto
-            ">
+            "
+             onClick={() => {router.push('/Catalog')}}>
               Explore Now <ChevronRight className="w-5 h-5" />
             </button>
           </div>
@@ -98,7 +99,7 @@ const Home = () => {
         <div className="flex justify-between items-center mb-12">
           <h2 className="text-3xl font-bold">New Arrivals</h2>
           <button 
-            onClick={() => router.push('/catalog')}
+            onClick={() => router.push('/Catalog')}
             className="text-purple-600 hover:text-purple-700 flex items-center gap-1"
           >
             View All <ChevronRight className="w-4 h-4" />

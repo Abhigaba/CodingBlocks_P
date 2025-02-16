@@ -11,14 +11,13 @@ const CartContent = () => {
 
   const {info} = useAuthContext()
 
-
-  const [cart, setCart] = useState([])
+  const [cart, setcart] = useState([])
   useEffect(() => {
 
 
     const getCart = async () => {
     const res = await axios.get(`http://localhost:3000/cart/fetch/${info._id}`);
-    setCart(res.data.data);
+    setcart(res.data.data);
     }
     getCart();
   }, [])
@@ -36,10 +35,15 @@ const CartContent = () => {
   const [subtotal, setSubtotal] = useState(0);
   const shipping = 12.99;
   useEffect(() => {
-    console.log(cart)
+
     setSubtotal(cart.reduce((sum, item) => 
     sum + calculateItemPrice(item.product_id.price, item.product_id.discount) * item.quantity, 0))} 
  , [cart])
+
+  const handleCheckout = async () => {
+    router.push('/Checkout')
+  }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -125,7 +129,7 @@ const CartContent = () => {
                       <dd className="text-lg font-medium text-gray-900">${(subtotal + shipping  + subtotal*0.08).toFixed(2)}</dd>
                     </div>
                   </dl>
-                  <button className="mt-6 w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2 transition-colors">
+                  <button onClick={() => handleCheckout()} className="mt-6 w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2 transition-colors">
                     <ShoppingBag size={20} />
                     Checkout
                   </button>

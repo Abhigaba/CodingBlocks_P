@@ -10,5 +10,5 @@ const  puserSchema = new mongoose.Schema({
     }
 });
 
-const puserModel = mongoose.model('puser', puserSchema)
+const puserModel = mongoose.model('apuser', puserSchema)
 module.exports = {puser : puserModel}

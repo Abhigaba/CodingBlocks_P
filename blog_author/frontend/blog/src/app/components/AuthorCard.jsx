@@ -22,6 +22,7 @@ const AuthorCard = ({authorData, setAuthorData, info}) => {
     <div className="border border-gray-300 rounded-lg p-4 shadow-md bg-white flex flex-col items-center space-y-4">
     <p className="text-lg font-semibold text-gray-800">{name}</p>
     <p className="text-sm text-gray-600">Age: {age}</p>
+    <p className="text-sm text-gray-600">ID: {_id}</p>
     <img
       src={`${imageUrl}`}
       alt="Author"

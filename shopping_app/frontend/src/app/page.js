@@ -7,13 +7,14 @@ import { ProductCard } from './components/ProductCard';
 import {LazyImage} from "./components/LazyImage";
 import {Footer} from  "./components/Footer";
 import { Navbar } from './components/Navbar';
+import { useRouter } from 'next/navigation';
 
 
 const Home = () => {
   
   const { products, loading, error, hasMore, loadMore, refetchProducts } = useProductContext();
   const featuredProducts = products.slice(0, 4);
-
+  const router = useRouter();
   useEffect(() => {
     refetchProducts()
   }, [])

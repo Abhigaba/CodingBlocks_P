@@ -2,11 +2,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ProductCard } from '../components/ProductCard';
 import { 
-  Search, 
   SlidersHorizontal, 
   Loader2, 
   X, 
-  ChevronDown,
   Check,
   Banknote,
   Tags,
@@ -32,11 +30,11 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from '../components/Navbar';
+import axios from 'axios';
 
 const FilterSection = ({ filters, setFilters, brands, onClearFilters }) => {
     const handleClearFilters = () => {
@@ -191,6 +189,7 @@ const FilterSection = ({ filters, setFilters, brands, onClearFilters }) => {
   
 
 const ProductCatalog = () => {
+  const s = new Set()
   const [products, setProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -220,15 +219,16 @@ const ProductCatalog = () => {
   const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch(`http://localhost:3000/product/fetch?page=${page}&limit=10`);
-      if (!response.ok) throw new Error('Failed to fetch products');
-      const data = await response.json();
       
+      const response = await axios.get(`http://localhost:3000/product/fetch?page=${page}&limit=10`);
+      
+      console.log(response.data.products);
+    
       setProducts(prevProducts => {
-        const newProducts = [...prevProducts, ...data.products];
+        const newProducts = [...prevProducts, ...response.data.products];
         return newProducts;
       });
-      setHasMore(data.hasMore);
+      setHasMore(response.data.hasMore);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -277,12 +277,16 @@ const ProductCatalog = () => {
   }, [products, filters]);
 
   useEffect(() => {
+    if (s.has(page)) { 
+      return 
+    }
+    s.add(page)
     fetchProducts();
   }, [page]);
 
   useEffect(() => {
     applyFilters();
-  }, [products, filters, applyFilters]);
+  }, [filters, applyFilters]);
 
   return (
     <>
@@ -354,7 +358,7 @@ const ProductCatalog = () => {
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredProducts.map((product, index) => (
               <div
-                key={product._id}
+                key={index}
                 ref={index === filteredProducts.length - 1 ? lastProductRef : null}
                 className="transform transition-all duration-300 hover:scale-[1.02]"
               >

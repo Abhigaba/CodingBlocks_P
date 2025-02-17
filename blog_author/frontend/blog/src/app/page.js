@@ -1,20 +1,20 @@
 "use client"
-import Image from "next/image";
-import { Navbar } from "./components/Navbar";
+
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Blogcard from "./components/Blogcard";
 export default function Home() {
 
   const [blogData, setBlogData] = useState([])
-
-  useEffect( () => {
-
-    const getData = async() => { 
+  
+  const getData = async() => { 
     const res = await axios.get('http://localhost:3000/blog/fetch')
     if (res.data.data.length > 0){
     setBlogData(res.data.data) ;}
   }
+  useEffect( () => {
+
+
     getData();
   }, [])
 
@@ -22,14 +22,12 @@ export default function Home() {
   const handleSubmit= async (event) => {
     event.preventDefault(); 
 
-    const title = event.target[0].value; // First input (Blog Title)
+    const title = event.target[0].value; 
     const author = event.target[1].value; // Second input (Author ID)
     const content = event.target[2].value; // Third input (Content)
 
     const res = await axios.post('http://localhost:3000/blog/add', {title: title, author: author, content: content})
-    const data = res.data.data; 
-
-    setBlogData([...blogData, data])
+    getData();
   }
 
   return (

@@ -5,7 +5,7 @@ import { Plus, Minus, X, ShoppingBag } from 'lucide-react';
 import { useCartContext } from '../contexts/useCartContext';
 
 
-export const CartItemCard = ({item, index}) => {
+export const CartItemCard = ({item, index, removeItem}) => {
 
         const [counter, setcounter] = useState(item.quantity);
 
@@ -15,10 +15,6 @@ export const CartItemCard = ({item, index}) => {
     
       } = useCartContext();
     
-    
-      const removeItem = (id) => {
-        deleteFromCart(id);
-      }
     
       const updateQuant = (id, quant) => {
             updateQuantity(id , quant + counter)

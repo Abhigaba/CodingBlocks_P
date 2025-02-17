@@ -74,7 +74,7 @@ export const ProductCard = ({ product }) => {
                 ${calculateDiscountedPrice(product.price, product.discount).toFixed(2)}
               </span>
               <span className="text-gray-500 line-through text-sm">
-                ${product.originalPrice}
+                ${product.price}
               </span>
             </>
           ) : (

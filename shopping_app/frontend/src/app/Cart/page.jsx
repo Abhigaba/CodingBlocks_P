@@ -11,16 +11,19 @@ const CartContent = () => {
 
   const {info} = useAuthContext()
 
-  const [cart, setcart] = useState([])
+  const { cart, setCart} = useCartContext()
+  const {deleteFromCart} = useCartContext()
   useEffect(() => {
-
-
     const getCart = async () => {
     const res = await axios.get(`http://localhost:3000/cart/fetch/${info._id}`);
-    setcart(res.data.data);
+    setCart(res.data.data);
     }
     getCart();
-  }, [])
+  }, [cart])
+
+  const removeItem = (id) => {
+    deleteFromCart(id);   };
+
   const router = useRouter()
   
 
@@ -100,7 +103,7 @@ const CartContent = () => {
                 </div>
                 <ul className="divide-y divide-gray-200">
                   {cart.map((item, index) => (
-                    <CartItemCard item={item} key={index}></CartItemCard>
+                    <CartItemCard item={item} removeItem={removeItem} key={index}></CartItemCard>
                   ))}
                 </ul>
               </div>

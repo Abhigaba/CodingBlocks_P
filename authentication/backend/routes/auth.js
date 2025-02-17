@@ -32,10 +32,9 @@ authRouter.post('/signup', async (req, res) => {
         const hashed = await bcrypt.hash(password, 10)
         const user = new puser({username: username, password: hashed});
         console.log(user);
-        await user.save()
         req.session.username = username;
         req.session.password = hashed;
-
+        await user.save()
         res.json({
             message: 'user successfully signed up',
             data: user
@@ -43,6 +42,7 @@ authRouter.post('/signup', async (req, res) => {
 
     }   
     catch(error)  { 
+      console.log(error.message)
         res.status(400).send(error.message); 
     }
 })

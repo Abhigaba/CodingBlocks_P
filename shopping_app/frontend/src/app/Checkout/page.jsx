@@ -41,7 +41,7 @@ const CheckoutPage = () => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Simulate API call
+
     try {
         await axios.post('http://localhost:3000/order/place', {})
       toast({
@@ -219,7 +219,7 @@ const CheckoutPage = () => {
                       <h3 className="text-sm font-medium text-gray-900">{item.product_id.name || 'Product Name'}</h3>
                       <p className="text-sm text-gray-500">Quantity: {item.quantity || 1}</p>
                     </div>
-                    <p className="text-sm font-medium text-gray-900">${item.product_id.price || '99.99'}</p>
+                    <p className="text-sm font-medium text-gray-900">${calculateItemPrice(item.product_id.price, item.product_id.discount).toFixed(2) || '99.99'}</p>
                   </div>
                 ))}
 

@@ -47,7 +47,8 @@ blogRouter.post('/add', async (req, res) => {
 
         res.json({
             message: 'New blog successfully added',
-            data : newBlog
+            data : newBlog,
+            author: authValid
         })
         
     }

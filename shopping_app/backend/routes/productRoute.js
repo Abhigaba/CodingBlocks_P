@@ -13,8 +13,7 @@ productRouter.get('/fetch', async (req, res) =>{
             const totalProducts = await product.countDocuments();
 
             
-            const products = await product.find({})
-                .select('-owner_id')
+            const products = await product.find({}).populate('owner_id', 'name')
                 .skip(skip)
                 .limit(limit);
             

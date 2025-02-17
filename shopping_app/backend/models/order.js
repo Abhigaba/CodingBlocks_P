@@ -8,6 +8,11 @@ const orderSchema = new mongoose.Schema({
         required: true, 
     }, 
 
+    owner_id : {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+    }
+    ,
     buyer_id : {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'suser',
@@ -28,7 +33,7 @@ const orderSchema = new mongoose.Schema({
         type : String,
         default: "placed",
         enum: {
-            values: ['shipped', 'deleivered'],
+            values: ['shipped', 'deleivered', 'placed'],
             message: '{VALUE} is not supported',
         }
     }

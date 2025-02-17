@@ -5,14 +5,13 @@ const Login = () => {
   const [username, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const router = useRouter();
-
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const response = await login({ username, password });
       localStorage.setItem('token', response.data.token);
-      router.push('/profile');
+      
     } catch (err) {
       setError('Invalid credentials');
     }

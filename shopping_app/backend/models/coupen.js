@@ -5,7 +5,7 @@ const coupenSchema  = new mongoose.Schema({
     owner_id : {
         type : mongoose.Schema.Types.ObjectId,
         ref : 'suser',
-        required
+        required: true
     },
     name : {
         type : String ,
@@ -65,9 +65,10 @@ const coupenSchema  = new mongoose.Schema({
     applicabelBrand : {
         type : String,
         enum: {
-            values: ['Nike', 'Asics', 'Sketchers', 'H&M', 'Zara', 'Adidas', 'RedTape'],
+            values: ['Nike', 'Asics', 'Sketchers', 'H&M', 'Zara', 'Adidas', 'Red Tape'],
             message: '{VALUE} is not a supported brand'
-        }, required: true,
+        }, 
+        required: true,
     }, 
 
     is_All_Brand: {

@@ -1,6 +1,6 @@
-import { coupen } from "../models/coupen";
+const {coupen} = require('../models/coupen');
 
-export function checkEleigibility(product, coupon) {
+const  checkEleigibility = (product, coupon) => {
  
     const isBrandEligible = product.brand === coupon.applicabelBrand;
 
@@ -15,4 +15,8 @@ export function checkEleigibility(product, coupon) {
     }
 
     return isBrandEligible;
+}
+
+module.exports = {
+    checkEleigibility
 }

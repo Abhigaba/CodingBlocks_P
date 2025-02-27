@@ -5,6 +5,7 @@ const {cartRouter} = require('./routes/cartRoute')
 const {productRouter} = require('./routes/productRoute')
 const {reviewRouter} = require('./routes/reviewRoute')
 const {orderRouter} = require('./routes/orderRoute')
+const {coupenRouter} = require('./routes/coupenRoute')
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const app = express();
@@ -33,6 +34,7 @@ app.use('/cart', cartRouter);
 app.use('/product', productRouter);
 app.use('/review', reviewRouter)
 app.use('/order', orderRouter)
+app.use('/coupen', coupenRouter)
 
 connectdb()
     .then(() => {

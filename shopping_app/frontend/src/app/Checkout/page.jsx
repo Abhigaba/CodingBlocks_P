@@ -1,18 +1,13 @@
 "use client"
 
 import React, { useState, useEffect } from 'react';
-import { 
-  CreditCard, 
-  MapPin, 
-  ShoppingBag, 
-  ChevronRight,
-  CheckCircle
-} from 'lucide-react';
 import { useCartContext } from '../contexts/useCartContext';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '../components/Navbar';
 import { useAuthContext } from '../contexts/useAuthContext';
+import {MapPin, ShoppingBag, ChevronRight, Tag, X} from 'lucide-react';
+import axios from 'axios';
 
 const CheckoutPage = () => {
   const { toast } = useToast();
@@ -27,6 +22,9 @@ const CheckoutPage = () => {
     phone: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -36,14 +34,21 @@ const CheckoutPage = () => {
     }));
   };
 
+  const handleCouponChange = (e) => {
+    setCouponCode(e.target.value.toUpperCase());
+  };
+
   const handleSubmit = async (e) => {
     console.log(cart)
     e.preventDefault();
     setIsSubmitting(true);
 
-
     try {
-        await axios.post('http://localhost:3000/order/place', {})
+        await axios.post('http://localhost:3000/order/place', {
+          ...formData,
+          couponCode: appliedCoupon ? appliedCoupon.code : null,
+          orderTotal: calculateTotal()
+        });
       toast({
         title: "Order Placed Successfully!",
         description: "Thank you for shopping with us.",
@@ -60,15 +65,78 @@ const CheckoutPage = () => {
     }
   };
 
+  const applyCoupon = async () => {
+    if (!couponCode.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a coupon code.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsValidatingCoupon(true);
+    try {
+
+      console.log(cart)
+
+      const discountProducts = cart.map((item) => {
+        return {product_id : item.product_id._id, quantity: item.quantity}
+      })
+
+      const response = await axios.post(`http://localhost:3000/coupen/apply/${couponCode}`, {products: discountProducts}, {withCredentials: true});
+      console.log(response.data)
+
+      
+      setAppliedCoupon({code:couponCode ,discountedAmount: response.data.discountedAmount});
+        toast({
+          title: "Coupon Applied!",
+          description: `${response.data.discountedAmount}% discount has been applied to your order.`,
+        });
+      
+    } catch (error) {
+      console.log(error)
+      toast({
+        title: "Error",
+        description: "Failed to validate coupon. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCode('');
+    toast({
+      title: "Coupon Removed",
+      description: "The coupon has been removed from your order.",
+    });
+  };
+
   const [subtotal, setSubtotal] = useState(0);
+  
   const calculateItemPrice = (price, discount) => {
     return discount > 0 ? price * (1 - discount / 100) : price;
   };
-    useEffect(() => {
   
-      setSubtotal(cart.reduce((sum, item) => 
-      sum + calculateItemPrice(item.product_id.price, item.product_id.discount) * item.quantity, 0))} 
-   , [cart])
+  useEffect(() => {
+    setSubtotal(cart.reduce((sum, item) => 
+      sum + calculateItemPrice(item.product_id.price, item.product_id.discount) * item.quantity, 0))
+  }, [cart]);
+
+  const calculateDiscount = () => {
+    if (!appliedCoupon) return 0;
+    return (appliedCoupon.discountedAmount);
+  };
+
+  const calculateTotal = () => {
+    const shipping = 12.99;
+    const tax = subtotal * 0.08;
+    const discount = calculateDiscount();
+    return subtotal + shipping + tax - discount;
+  };
 
   return (
     <>    
@@ -205,6 +273,57 @@ const CheckoutPage = () => {
                 <h2 className="text-2xl font-semibold ml-2">Order Summary</h2>
               </div>
 
+              {/* Coupon Code Section */}
+              <div className="mb-6 border-b pb-6">
+                <div className="flex items-center mb-3">
+                  <Tag className="h-5 w-5 text-indigo-600" />
+                  <h3 className="text-lg font-medium ml-2">Discount Coupon</h3>
+                </div>
+                
+                {appliedCoupon ? (
+                  <div className="bg-green-50 border border-green-200 rounded-md p-3 flex items-center justify-between">
+                    <div>
+                      <span className="text-green-800 font-medium">{appliedCoupon.code}</span>
+                      <p className="text-sm text-green-600">
+                        {appliedCoupon.discountedAmount} discount applied
+                      </p>
+                    </div>
+                    <button
+                      onClick={removeCoupon}
+                      className="text-gray-500 hover:text-gray-700"
+                      type="button"
+                    >
+                      <X className="h-5 w-5" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex">
+                    <input
+                      type="text"
+                      value={couponCode}
+                      onChange={handleCouponChange}
+                      placeholder="Enter coupon code"
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <button
+                      onClick={applyCoupon}
+                      disabled={isValidatingCoupon}
+                      className="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      type="button"
+                    >
+                      {isValidatingCoupon ? (
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      ) : (
+                        "Apply"
+                      )}
+                    </button>
+                  </div>
+                )}
+              </div>
+
               <div className="space-y-4">
                 {cart.map((item, index) => (
                   <div key={index} className="flex items-center space-x-4">
@@ -228,6 +347,14 @@ const CheckoutPage = () => {
                     <span>Subtotal</span>
                     <span>${subtotal.toFixed(2)}</span>
                   </div>
+                  
+                  {appliedCoupon && (
+                    <div className="flex justify-between text-sm text-green-600">
+                      <span>Discount ({appliedCoupon.discountedAmount})</span>
+                      <span>-${calculateDiscount().toFixed(2)}</span>
+                    </div>
+                  )}
+                  
                   <div className="flex justify-between text-sm text-gray-600">
                     <span>Shipping</span>
                     <span>$12.99</span>
@@ -238,7 +365,7 @@ const CheckoutPage = () => {
                   </div>
                   <div className="flex justify-between text-sm font-medium text-gray-900 pt-2 border-t">
                     <span>Total</span>
-                    <span>${(subtotal + 12.99  + subtotal*0.08).toFixed(2)}</span>
+                    <span>${calculateTotal().toFixed(2)}</span>
                   </div>
                 </div>
               </div>
@@ -248,10 +375,8 @@ const CheckoutPage = () => {
       </div>
     </div>
     </>
-
   );
 };
-
 
 const page = () => {
         const router = useRouter();

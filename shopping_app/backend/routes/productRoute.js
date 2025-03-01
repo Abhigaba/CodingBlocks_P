@@ -1,6 +1,8 @@
 const express = require('express');
 const {authMiddle} = require('../middleware/authMiddleware');
 const {product} = require('../models/product');
+const {wishList} = require('../models/wishlist');
+const nodemailer = require("nodemailer")
 const productRouter = express.Router(); 
 
 productRouter.get('/fetch', async (req, res) =>{
@@ -100,6 +102,133 @@ productRouter.patch('/update/:id', authMiddle, async (req, res) => {
         });
     } catch (error) {
         res.status(500).json({ message: 'Error updating product', error: error.message });
+    }
+})
+
+productRouter.patch('/update/stock/:id', authMiddle, async(req, res) => {
+
+    try {
+
+        if (req.user.isAdmin !== 'admin') {
+            return res.status(403).json({ message: 'Admin access required' });
+        }
+
+        const isStock = req.query.in_stock;
+        
+        const selectedProduct = await product.findOne({_id: req.params.id}).populate('owner_id', '_id');
+       
+        if (selectedProduct.owner_id._id.toString() !== req.user._id.toString()) {
+            return res.status(403).json({ message: 'You are not authorized to update this product' });
+        }
+    
+        if (selectedProduct.in_stock === isStock && isStock === 'true') {
+            return res.status(400).json({ message: 'Product already in stock' });
+        }
+
+        if (selectedProduct.in_stock === isStock && isStock === 'false') {
+            return res.status(400).json({ message: 'Product already out of stock' });
+        }
+
+        
+
+        selectedProduct.in_stock = isStock;
+        await selectedProduct.save();
+        if (isStock === 'true') {
+        const wishlistUsers = await wishList.find({product_id : req.params.id}).select('user_id').populate('user_id', 'email')
+        
+        if (wishlistUsers.length > 0) {
+            const transporter = nodemailer.createTransport({    
+                service: 'Gmail',
+                host: "smtp.gmail.com",
+                port: 465,
+                secure: true,
+                auth: {
+                  user: 'abhigaba300@gmail.com',
+                  pass: 'xxqa qrrv tcqi nnjr'
+                }
+              });
+
+            wishlistUsers.forEach(async (user) => {
+
+                const mailOptions = {
+                    from: '"SoleStyle" <abhigaba300@gmail.com>',
+                    to: 'gabaabi2445@gmail.com',
+                    subject: '🎉 Your Wishlist Item is Back in Stock!',
+                    html: `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body { font-family: Arial, sans-serif; line-height: 1.6; }
+                                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                                .logo { text-align: center; margin-bottom: 20px; }
+                                .header { background-color: #4F46E5; color: white; padding: 20px; border-radius: 8px; }
+                                .content { background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0; }
+                                .button { 
+                                    background-color: #4F46E5; 
+                                    color: white; 
+                                    padding: 12px 24px; 
+                                    text-decoration: none; 
+                                    border-radius: 4px; 
+                                    display: inline-block; 
+                                    margin: 20px 0;
+                                }
+                                .footer { text-align: center; color: #666; font-size: 12px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="logo">
+                                    <svg viewBox="0 0 100 100" style="height: 50px; width: 50px;">
+                                        <path d="M20,80 Q30,95 50,80 Q70,95 80,80 Q90,65 80,50 Q70,35 50,50 Q30,35 20,50 Q10,65 20,80" fill="#4F46E5"/>
+                                        <path d="M30,70 Q50,85 70,70" fill="none" stroke="#fff" stroke-width="2"/>
+                                    </svg>
+                                    <h1 style="color: #4F46E5; margin: 10px 0;">SoleStyle</h1>
+                                </div>
+                                <div class="header">
+                                    <h2>Great News! 🎉</h2>
+                                </div>
+                                <div class="content">
+                                    <h3>Your Wishlist Item is Back!</h3>
+                                    <p>Hey there,</p>
+                                    <p>We're excited to let you know that <strong>${selectedProduct.name}</strong> is back in stock!</p>
+                                    <p>Product Details:</p>
+                                    <ul>
+                                        <li>Name: ${selectedProduct.name}</li>
+                                        <li>Brand: ${selectedProduct.brand}</li>
+                                        <li>Price: $${selectedProduct.price}</li>
+                                    </ul>
+                                    <a href="${process.env.FRONTEND_URL}/product/${selectedProduct._id}" class="button">
+                                        Shop Now
+                                    </a>
+                                    <p><small>Hurry! Popular items sell out quickly.</small></p>
+                                </div>
+                                <div class="footer">
+                                    <p>© ${new Date().getFullYear()} SoleStyle. All rights reserved.</p>
+                                    <p>You received this email because you added this item to your wishlist.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
+                    `,
+                    text: `Your Wishlist Item ${selectedProduct.name} is Back in Stock! Visit our website to shop now.`
+                };
+
+              transporter.sendMail(mailOptions, (error, info) => {
+                if (error) {
+                  console.error("Error sending email: ", error);
+                } else {
+                  console.log("Email sent: ", info.response);
+                }
+              });
+            }
+
+            )
+        };}
+        return res.json({message: 'Product stock updated successfully'});
+    }
+    catch(error) { 
+        res.status(401).json({message: error.message})
     }
 })
 

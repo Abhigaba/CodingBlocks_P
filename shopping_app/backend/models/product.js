@@ -28,6 +28,9 @@ const productSchema = new mongoose.Schema({
 
     discount: {
         type : Number , 
+        min: 0,
+        default: 0,
+        max: 90,
     },
 
     description : {
@@ -38,6 +41,11 @@ const productSchema = new mongoose.Schema({
     imageUrl : {
         type : String ,
         required : true ,
+    },
+    in_stock:  { 
+        type : Boolean,
+        required: true,
+        default: true
     }
 
 },   {

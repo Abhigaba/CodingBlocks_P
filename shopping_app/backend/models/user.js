@@ -24,7 +24,7 @@ const userSchema = new mongoose.Schema({
             values: ['client', 'admin'],
             message: '{VALUE} is not supported',
         }
-    }
+    },
 
 },  {
     timestamps: true

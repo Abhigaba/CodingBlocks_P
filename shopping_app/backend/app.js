@@ -6,6 +6,8 @@ const {productRouter} = require('./routes/productRoute')
 const {reviewRouter} = require('./routes/reviewRoute')
 const {orderRouter} = require('./routes/orderRoute')
 const {coupenRouter} = require('./routes/coupenRoute')
+const {wishRouter} = require('./routes/wishlishRoute');
+
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const app = express();
@@ -32,9 +34,10 @@ app.use((req, res, next) => {
 app.use('/auth', authRouter);
 app.use('/cart', cartRouter);
 app.use('/product', productRouter);
-app.use('/review', reviewRouter)
-app.use('/order', orderRouter)
-app.use('/coupen', coupenRouter)
+app.use('/review', reviewRouter);
+app.use('/order', orderRouter);
+app.use('/coupen', coupenRouter);
+app.use('/wishlist', wishRouter);
 
 connectdb()
     .then(() => {

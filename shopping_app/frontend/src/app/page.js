@@ -15,6 +15,7 @@ const Home = () => {
   const { products, loading, error, hasMore, loadMore, refetchProducts } = useProductContext();
   const featuredProducts = products.slice(0, 4);
   const router = useRouter();
+  
   useEffect(() => {
     refetchProducts()
   }, [])

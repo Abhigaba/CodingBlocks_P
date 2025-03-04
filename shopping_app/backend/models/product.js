@@ -46,6 +46,16 @@ const productSchema = new mongoose.Schema({
         type : Boolean,
         required: true,
         default: true
+    },
+    on_sale: {
+        type: Boolean,
+        required: true,
+        default: true,
+    },
+    sale_discount: {
+        type: Number,
+        min: 30,
+        default : 30,
     }
 
 },   {

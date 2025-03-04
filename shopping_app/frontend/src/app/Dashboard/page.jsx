@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { useAuthContext } from '../contexts/useAuthContext';
 import axios from 'axios';
 import { AdminSidebar } from '../components/AdminSidebar';
@@ -30,7 +31,9 @@ const DashboardContext = () => {
     name: '',
     brand: '',
     price: '',
-    discount: '',
+    discount: '', // Regular discount
+    inSale: false,
+    sale_discount: '', // Sale discount
     imageUrl: '',
     description: ''
   });
@@ -44,7 +47,7 @@ const DashboardContext = () => {
   const fetchProducts = async () => {
     try {
       const response = await axios.get(`http://localhost:3000/product/admin/fetch/${info._id}`, { withCredentials: true });
-    console.log(response.data.data)
+      console.log(response.data.data)
       setProducts(response.data.data);
     } catch (error) {
       console.error('Error fetching products', error);
@@ -59,6 +62,14 @@ const DashboardContext = () => {
     }));
   };
 
+  const handleSaleToggle = (checked) => {
+    setFormData(prev => ({
+      ...prev,
+      inSale: checked,
+      // Reset sale discount if sale is turned off
+      sale_discount: checked ? prev.sale_discount : ''
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -68,35 +79,35 @@ const DashboardContext = () => {
       const url = editingProduct 
         ? `http://localhost:3000/product/update/${editingProduct._id}`
         : 'http://localhost:3000/product/add';
-
-      const method = editingProduct ? 'PUT' : 'POST';
-      
+  
       if (editingProduct){
-      const response = await axios.patch(url, 
-        {
-          ...formData,
-          owner_id : info._id,
-          price: parseFloat(formData.price),
-          discount: parseFloat(formData.discount)
-        }, 
-        {withCredentials: true})
-
-      await fetchProducts();
-      
-      setIsModalOpen(false);
-      setEditingProduct(null);}
-    else {
-        const res = await axios.post(url,{
+        const response = await axios.patch(url, 
+          {
             ...formData,
-            owner_id: info._id,
+            owner_id : info._id,
             price: parseFloat(formData.price),
-            discount: parseFloat(formData.discount)
-          } , {withCredentials: true})
+            discount: parseFloat(formData.discount) || 0,
+            sale_discount: formData.inSale ? parseFloat(formData.sale_discount) : 0
+          }, 
+          {withCredentials: true})
 
-          await fetchProducts();
-      setIsModalOpen(false);
-      setEditingProduct(null);
-    }
+        await fetchProducts();
+        
+        setIsModalOpen(false);
+        setEditingProduct(null);
+      } else {
+        const res = await axios.post(url,{
+          ...formData,
+          owner_id: info._id,
+          price: parseFloat(formData.price),
+          discount: parseFloat(formData.discount) || 0,
+          sale_discount: formData.inSale ? parseFloat(formData.sale_discount) : 0
+        }, {withCredentials: true})
+
+        await fetchProducts();
+        setIsModalOpen(false);
+        setEditingProduct(null);
+      }
     } catch (error) {
       console.error('Error saving product:', error);
     } finally {
@@ -104,21 +115,49 @@ const DashboardContext = () => {
     }
   };
 
+  // When editing a product, set the initial form data
+  useEffect(() => {
+    if (editingProduct) {
+      setFormData({
+        name: editingProduct.name,
+        brand: editingProduct.brand,
+        price: editingProduct.price.toString(),
+        discount: editingProduct.discount > 0 ? editingProduct.discount.toString() : '',
+        inSale: editingProduct.sale_discount > 0,
+        sale_discount: editingProduct.sale_discount > 0 ? editingProduct.sale_discount.toString() : '',
+        imageUrl: editingProduct.imageUrl,
+        description: editingProduct.description
+      });
+    } else {
+      // Reset form when not editing
+      setFormData({
+        name: '',
+        brand: '',
+        price: '',
+        discount: '',
+        inSale: false,
+        sale_discount: '',
+        imageUrl: '',
+        description: ''
+      });
+    }
+  }, [editingProduct]);
+
   return (
-        <div className="min-h-screen bg-gray-100">
-    
-        <AdminHeader toggleSidebar={toggleSidebar}></AdminHeader>
-        <div className="flex">
-            <AdminSidebar sidebarOpen={sidebarOpen} ></AdminSidebar>
-                <main className="flex-1 p-6">
-                <AdminMain setEditingProduct={setEditingProduct} 
-                products={products}
-                setIsModalOpen={setIsModalOpen}
-                setFormData={setFormData} 
-                setProducts={setProducts}
-                fetchProducts= {fetchProducts}>
-                </AdminMain>
-                </main>
+    <div className="min-h-screen bg-gray-100">
+      <AdminHeader toggleSidebar={toggleSidebar}></AdminHeader>
+      <div className="flex">
+        <AdminSidebar sidebarOpen={sidebarOpen} ></AdminSidebar>
+        <main className="flex-1 p-6">
+          <AdminMain 
+            setEditingProduct={setEditingProduct} 
+            products={products}
+            setIsModalOpen={setIsModalOpen}
+            setFormData={setFormData} 
+            setProducts={setProducts}
+            fetchProducts={fetchProducts}>
+          </AdminMain>
+        </main>
 
         <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
           <DialogContent className="sm:max-w-[425px]">
@@ -160,7 +199,7 @@ const DashboardContext = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="discount">Discount (%)</Label>
+                  <Label htmlFor="discount">Regular Discount (%)</Label>
                   <Input
                     id="discount"
                     name="discount"
@@ -169,8 +208,31 @@ const DashboardContext = () => {
                     max="100"
                     value={formData.discount}
                     onChange={handleInputChange}
+                    placeholder="Regular Discount"
                   />
                 </div>
+              </div>
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="inSale"
+                  checked={formData.inSale}
+                  onCheckedChange={handleSaleToggle}
+                />
+                <Label htmlFor="inSale">Include in Sale</Label>
+              </div>
+              <div>
+                <Label htmlFor="sale_discount">Sale Discount (%)</Label>
+                <Input
+                  id="sale_discount"
+                  name="sale_discount"
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={formData.sale_discount}
+                  onChange={handleInputChange}
+                  disabled={!formData.inSale}
+                  placeholder={!formData.inSale ? 'Sale not enabled' : 'Enter sale discount'}
+                />
               </div>
               <div>
                 <Label htmlFor="imageUrl">Image URL</Label>
@@ -208,32 +270,30 @@ const DashboardContext = () => {
   );
 };
 
-
 const Page = () => {
+  const router = useRouter();
+  const {info} = useAuthContext()
 
-        const router = useRouter();
-        const {info} = useAuthContext()
+  const [shouldRedirect, setShouldRedirect] = useState(false)
 
-        const [shouldRedirect, setShouldRedirect] = useState(false)
+  useEffect(() => {
+    if (!info._id) {
+      setShouldRedirect(true)
+    }
+    else if(info.isAdmin === 'client'){
+      setShouldRedirect(true)
+    }
+  }, [info?._id])
 
-        useEffect(() => {
-          if (!info._id) {
-            setShouldRedirect(true)
-          }
-          else if(info.isAdmin === 'client'){
-            setShouldRedirect(true)
-          }
-        }, [info?._id])
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.replace('./')
+    }
+  }, [shouldRedirect, router])
 
-        useEffect(() => {
-          if (shouldRedirect) {
-            router.replace('./')
-          }
-        }, [shouldRedirect, router])
-
-        if (!info._id) {
-          return null
-        }
+  if (!info._id) {
+    return null
+  }
 
   return <DashboardContext />
 };

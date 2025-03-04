@@ -2,6 +2,7 @@ const express = require('express');
 const {authMiddle} = require('../middleware/authMiddleware');
 const {product} = require('../models/product');
 const {wishList} = require('../models/wishlist');
+const {sale} = require('../models/sale')
 const nodemailer = require("nodemailer")
 const productRouter = express.Router(); 
 
@@ -19,6 +20,13 @@ productRouter.get('/fetch', async (req, res) =>{
                 .skip(skip)
                 .limit(limit);
             
+            const saleExists = await sale.find({}) 
+            let ifSale = false ;
+
+            if(saleExists.start >= Date.now() || saleExists.end < Date.now()){
+                ifSale = true ; 
+            }
+            
             if (products.length == 0) {throw new Error('No products available') }
 
             res.json({
@@ -31,7 +39,8 @@ productRouter.get('/fetch', async (req, res) =>{
                     totalPages: Math.ceil(totalProducts / limit),
                     hasNextPage: skip + limit < totalProducts,
                     hasPrevPage: page > 1
-                }
+                },
+                ifSale : ifSale 
             });
         
     } catch (error) {
@@ -64,8 +73,26 @@ productRouter.post('/add',authMiddle, async  (req, res) => {
         if (!req.user.isAdmin) {
             return res.status(403).json({ message: 'Admin access required' });
         }
+        
+        const {name , 
+            brand, 
+            price, 
+            discount, 
+            imageUrl , 
+            in_stock, 
+            on_sale ,
+            sale_discount} = req.body
 
+        const ifExists = await product.findOne({owner_id : req.user._id, name : name}) ;
+        if(ifExists) { 
+            return res.status(400).json({message : 'Product already exists'}) ;
+        }
 
+        if (on_sale && sale_discount < discount) { 
+            return res.status(400).json({message : 'Sale discount cannot be less than normal discount'}) ;
+        }
+
+        
         const newProduct = new product({
             ...req.body, owner_id : req.user._id
         });

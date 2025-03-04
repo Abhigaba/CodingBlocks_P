@@ -9,6 +9,7 @@ export const ProductCard = ({ product }) => {
     const router = useRouter()
     const {info} = useAuthContext()
     const {toast} = useToast()
+    
     const calculateDiscountedPrice = (originalPrice, discount) => {
       if (!discount) return originalPrice;
       return originalPrice - (originalPrice * (discount / 100));

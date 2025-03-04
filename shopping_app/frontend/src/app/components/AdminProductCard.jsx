@@ -32,7 +32,8 @@ export const AdminProductCard = ({
 
   const handleUpdateStockStatus = async (product_id, newStockStatus) => {
       try {
-          await axios.patch(`http://localhost:3000/product/update/stock/${product_id}?in_stock=${newStockStatus}`, {},{withCredentials: true});
+          console.log(!newStockStatus)
+          await axios.patch(`http://localhost:3000/product/update/stock/${product_id}?in_stock=${!newStockStatus}`, {},{withCredentials: true});
           return true;
         }
       catch(error) {
@@ -56,7 +57,7 @@ export const AdminProductCard = ({
     const change  = await handleUpdateStockStatus(product._id, newStockStatus);
     setShowStockModal(false);  
     if(change){
-      setNewStockStatus(!newStockStatus);
+      setNewStockStatus((prev) => !prev)
       toast({
         title: "Success",
         description : "Item Stock successfully Updated",

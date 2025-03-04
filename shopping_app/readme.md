@@ -62,6 +62,10 @@ A comprehensive, microservices-based e-commerce platform built with the MERN (Mo
    - Cart operations
    - Price calculations
 
+5. **Coupen Managment**
+   - Coupen Operations
+   - Final Price calculations
+
 ## 💻 Tech Stack
 
 ### Backend
@@ -137,7 +141,6 @@ A comprehensive, microservices-based e-commerce platform built with the MERN (Mo
 ## 🚧 Future Roadmap
 - [ ] Implement payment gateway integration
 - [ ] Add advanced search and filtering
-- [ ] Add product cataglog
 - [ ] Create admin analytics dashboard
 - [ ] Implement user wishlist
 - [ ] Add product recommendations

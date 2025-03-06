@@ -46,12 +46,12 @@ export const CartProvider = ({children}) => {
       const addToCart = async (product, quantity = 1) => {
         try {
           setLoading(true);
-          const existingItemIndex = cart.findIndex(
+          const existingItemIndex = cart.products.findIndex(
             item => item.product_id._id === product._id
           );
       
           if (existingItemIndex >= 0) { 
-            updateQuantity(cart[existingItemIndex]._id, 1);
+            updateQuantity(cart.products[existingItemIndex]._id, 1);
           }
           else {
             const response = await axios.post(`http://localhost:3000/cart/add`, {
@@ -94,13 +94,14 @@ export const CartProvider = ({children}) => {
                 { withCredentials: true } // Ensures cookies are sent
               );
 
-          setCart(prev =>
-            prev.map(item =>
-              item._id === id
-                ? { ...item, quantity:  newQuantity }
-                : item
-            )
-          );
+              setCart(prev => ({
+                ...prev,
+                products: prev.products.map(item =>
+                  item._id === id
+                    ? { ...item, quantity: newQuantity }
+                    : item
+                )
+              }));
           toast.success('Cart updated');
           console.log(res)
           

@@ -8,26 +8,26 @@ saleRouter.post('/', authMiddle, async (req, res) => {
 
     try { 
         const exists = await sale.find({}) ;
-
-
-        if (exists[0].start < Date.now() && exists[0].end > Date.now()) {
+        
+        if (exists.length > 0  && exists[0].start < Date.now() && exists[0].end > Date.now()) {
             return res.status(400).json({message : "Sale already exists"}) ;
         }
         const {name, start, end} = req.body ; 
+
 
         if (start > end){ 
             return res.status(400).json({message : "Start date must be before end date"}) ;
         }
 
-
-        if (exists[0].end < Date.now()) {
+        console.log(exists[0].end < Date.now())
+        if (exists.length > 0 && exists[0].end < Date.now()) {
                 await sale.findOneAndUpdate({name : exists[0].name}, {name : name , start : start ,end : end}) ;               
         }
         else {
             
-        const newSale = new sale({
-            name, start ,end 
-        }) 
+                const newSale = new sale({
+                    name, start ,end 
+            }) 
 
         await newSale.save();}
         res.json({
@@ -35,6 +35,7 @@ saleRouter.post('/', authMiddle, async (req, res) => {
         })
     }
     catch(error) {
+        console.log(error.message)
         res.status(500).json({message : "Internal server error"});
     }
 })
@@ -70,3 +71,7 @@ saleRouter.delete('/delete ', authMiddle, async (req, res) => {
         res.status(500).json({message : "Internal server error"}) ;
     }
 });
+
+module.exports = {
+    saleRouter
+}

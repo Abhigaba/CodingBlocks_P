@@ -22,8 +22,8 @@ productRouter.get('/fetch', async (req, res) =>{
             
             const saleExists = await sale.find({}) 
             let ifSale = false ;
-
-            if(saleExists.start >= Date.now() || saleExists.end < Date.now()){
+          
+            if(saleExists[0].start <= Date.now() || saleExists[0].end > Date.now()){
                 ifSale = true ; 
             }
             
@@ -40,7 +40,7 @@ productRouter.get('/fetch', async (req, res) =>{
                     hasNextPage: skip + limit < totalProducts,
                     hasPrevPage: page > 1
                 },
-                ifSale : ifSale 
+                sale : ifSale 
             });
         
     } catch (error) {
@@ -56,10 +56,18 @@ productRouter.get('/admin/fetch/:id', authMiddle, async(req, res) => {
     } 
 
     const products = await product.find({owner_id: req.params.id})
+    
+    const saleExists = await sale.find({}) 
+    let ifSale = false ;
+   
+    if(saleExists.start <= Date.now() || saleExists.end > Date.now()){
+        ifSale = true ; 
+    }
 
     res.json({
         message: "Products fetched successfully",
-        data: products
+        data: products,
+        sale: ifSale
     })}
     catch(error) {
         res.status(400).send(error.message);

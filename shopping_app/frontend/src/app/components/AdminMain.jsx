@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/dialog";
 import { VisuallyHidden } from '@/components/ui/visually-hidden';
 
-
 const LoadingModal = ({ isOpen }) => {
   return (
     <Dialog open={isOpen}>
@@ -26,6 +25,7 @@ const LoadingModal = ({ isOpen }) => {
   </Dialog>
   );
 };
+
 const AdminMain = ({products, setProducts, setFormData, setEditingProduct, setIsModalOpen, fetchProducts}) => {
 
     const [loading, setloading] = useState(false)
@@ -60,7 +60,7 @@ const AdminMain = ({products, setProducts, setFormData, setEditingProduct, setIs
 
         try {
           setloading(true)
-          const response = await axios.delete(`http://localhost:3000/product/delete/${productId}`, 
+          await axios.delete(`http://localhost:3000/product/delete/${productId}`, 
             { withCredentials: true }
           );
           

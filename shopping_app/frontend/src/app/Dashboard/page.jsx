@@ -26,6 +26,7 @@ const DashboardContext = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  
 
   const [formData, setFormData] = useState({
     name: '',

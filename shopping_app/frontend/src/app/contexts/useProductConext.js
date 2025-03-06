@@ -6,6 +6,8 @@ const ProductContext = createContext({
   loading: false,
   error: null,
   hasMore: true,
+  sale :  false,
+  setSale : () => {},
   loadMore: () => {},
   setProducts: () => {},
   refetchProducts: () => {}
@@ -17,6 +19,7 @@ export const ProductContextProvider = ({ children }) => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const [sale, setSale] = useState(false) ; 
 
   const fetchProducts = async (pageNumber = 1, isLoadMore = false) => {
     try {
@@ -34,10 +37,13 @@ export const ProductContextProvider = ({ children }) => {
       // Assuming backend sends both products and a total count or hasMore flag
       const newProducts = data.products;
       const hasMoreProducts = data.hasMore || newProducts.length === 10;
-
+      
+      setSale(data.sale);
+      console.log(data)
       setProducts(prev => isLoadMore ? [...prev, ...newProducts] : newProducts);
       setHasMore(hasMoreProducts);
       setPage(pageNumber);
+
     } catch (err) {
       setError(err.message);
     } finally {
@@ -70,6 +76,8 @@ export const ProductContextProvider = ({ children }) => {
     loading,
     error,
     hasMore,
+    sale,
+    setSale,
     loadMore,
     setProducts,
     refetchProducts

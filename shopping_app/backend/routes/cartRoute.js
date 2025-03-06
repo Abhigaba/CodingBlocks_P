@@ -1,18 +1,25 @@
 const express = require('express');
 const {authMiddle} = require('../middleware/authMiddleware')
 const {cart} = require('../models/cart')
-
+const {sale} = require('../models/sale')
 const cartRouter = express.Router()
 
 cartRouter.get('/fetch/:id', async (req, res) =>{
 
     try {
             {
-            const products = await cart.find({user_id: req.params.id}).populate('product_id', 'name brand price discount imageUrl').select('product_id, quantity _id')
+            const products = await cart.find({user_id: req.params.id}).populate('product_id', 'name brand price discount imageUrl sale_discount on_sale').select('product_id, quantity _id')
+            const saleExists = await sale.find({})
+
+            let ifSale = false ; 
+            
+            if(saleExists[0].start <= Date.now() || saleExists[0].end > Date.now()){
+                ifSale = true ;
+            } 
 
             res.json({
                 message: 'Products fetched successfully',
-                data:products,
+                data:{products: products, sale: ifSale},
             });
         }
     } catch (error) {

@@ -21,6 +21,7 @@ const CheckoutPage = () => {
     pincode: '',
     phone: ''
   });
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [couponCode, setCouponCode] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState(null);
@@ -39,7 +40,7 @@ const CheckoutPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    console.log(cart)
+    
     e.preventDefault();
     setIsSubmitting(true);
 
@@ -77,10 +78,7 @@ const CheckoutPage = () => {
 
     setIsValidatingCoupon(true);
     try {
-
-      console.log(cart)
-
-      const discountProducts = cart.map((item) => {
+      const discountProducts = cart.products.map((item) => {
         return {product_id : item.product_id._id, quantity: item.quantity}
       })
 
@@ -122,8 +120,8 @@ const CheckoutPage = () => {
   };
   
   useEffect(() => {
-    setSubtotal(cart.reduce((sum, item) => 
-      sum + calculateItemPrice(item.product_id.price, item.product_id.discount) * item.quantity, 0))
+    setSubtotal(cart.products.reduce((sum, item) => 
+      sum + calculateItemPrice(item.product_id.price, (cart.sale ? item.product_id.sale_discount  : item.product_id.discount)) * item.quantity, 0))
   }, [cart]);
 
   const calculateDiscount = () => {
@@ -325,7 +323,7 @@ const CheckoutPage = () => {
               </div>
 
               <div className="space-y-4">
-                {cart.map((item, index) => (
+                {cart.products.map((item, index) => (
                   <div key={index} className="flex items-center space-x-4">
                     <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center">
                       <img
@@ -338,7 +336,7 @@ const CheckoutPage = () => {
                       <h3 className="text-sm font-medium text-gray-900">{item.product_id.name || 'Product Name'}</h3>
                       <p className="text-sm text-gray-500">Quantity: {item.quantity || 1}</p>
                     </div>
-                    <p className="text-sm font-medium text-gray-900">${calculateItemPrice(item.product_id.price, item.product_id.discount).toFixed(2) || '99.99'}</p>
+                    <p className="text-sm font-medium text-gray-900">${calculateItemPrice(item.product_id.price, (cart.sale ? item.product_id.sale_discount : item.product_id.discount))*item.quantity.toFixed(2) || '99.99'}</p>
                   </div>
                 ))}
 

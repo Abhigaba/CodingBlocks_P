@@ -13,12 +13,18 @@ const CartContent = () => {
 
   const { cart, setCart} = useCartContext()
   const {deleteFromCart} = useCartContext()
+  
   useEffect(() => {
     const getCart = async () => {
     const res = await axios.get(`http://localhost:3000/cart/fetch/${info._id}`);
     setCart(res.data.data);
     }
-    getCart();
+    if(Object.keys(cart).length > 0 ) {
+    
+      return}
+    
+    getCart()
+    ;
   }, [cart])
 
   const removeItem = (id) => {
@@ -37,10 +43,10 @@ const CartContent = () => {
   
   const [subtotal, setSubtotal] = useState(0);
   const shipping = 12.99;
-  useEffect(() => {
 
-    setSubtotal(cart.reduce((sum, item) => 
-    sum + calculateItemPrice(item.product_id.price, item.product_id.discount) * item.quantity, 0))} 
+  useEffect(() => {
+    setSubtotal(cart.products.reduce((sum, item) => 
+    sum + calculateItemPrice(item.product_id.price, (item.product_id.on_sale ? item.product_id.sale_discount : item.product_id.discount)) * item.quantity, 0))} 
  , [cart])
 
   const handleCheckout = async () => {
@@ -75,7 +81,7 @@ const CartContent = () => {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-        {cart.length === 0 ? (
+        {cart.products.length === 0 ? (
           // Empty Cart State
           <div className="bg-white rounded-lg shadow">
             <div className="px-6 py-4 border-b border-gray-200">
@@ -102,8 +108,8 @@ const CartContent = () => {
                   <h2 className="text-xl font-semibold text-gray-900">Shopping Cart</h2>
                 </div>
                 <ul className="divide-y divide-gray-200">
-                  {cart.map((item, index) => (
-                    <CartItemCard item={item} removeItem={removeItem} key={index}></CartItemCard>
+                  {cart.products.map((item, index) => (
+                    <CartItemCard item={item} sale = {cart.sale} removeItem={removeItem} key={index}></CartItemCard>
                   ))}
                 </ul>
               </div>

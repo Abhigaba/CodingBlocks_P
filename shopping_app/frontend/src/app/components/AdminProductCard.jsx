@@ -18,6 +18,7 @@ import {
 import { Switch } from '@/components/ui/switch';
 import axios from 'axios';
 import { useToast } from '@/hooks/use-toast';
+import { useProductContext } from '../contexts/useProductConext';
 
 export const AdminProductCard = ({ 
   product, 
@@ -28,20 +29,18 @@ export const AdminProductCard = ({
   const [showStockModal, setShowStockModal] = useState(false);
   const [newStockStatus, setNewStockStatus] = useState(product.in_stock);
   const { toast } = useToast();
-
-
+  const {sale} = useProductContext();
+  
   const handleUpdateStockStatus = async (product_id, newStockStatus) => {
-      try {
-          console.log(!newStockStatus)
-          await axios.patch(`http://localhost:3000/product/update/stock/${product_id}?in_stock=${!newStockStatus}`, {},{withCredentials: true});
-          return true;
-        }
-      catch(error) {
-        console.log(error.message);
-        return false
-      }
-
-
+    try {
+      console.log(!newStockStatus)
+      await axios.patch(`http://localhost:3000/product/update/stock/${product_id}?in_stock=${!newStockStatus}`, {},{withCredentials: true});
+      return true;
+    }
+    catch(error) {
+      console.log(error.message);
+      return false
+    }
   }
 
   const calculateDiscountedPrice = (price, discount) => {
@@ -53,7 +52,6 @@ export const AdminProductCard = ({
   };
 
   const confirmStockUpdate = async () => {
-
     const change  = await handleUpdateStockStatus(product._id, newStockStatus);
     setShowStockModal(false);  
     if(change){
@@ -80,7 +78,14 @@ export const AdminProductCard = ({
 
   return (
     <>
-      <Card className="overflow-hidden">
+      <Card className="overflow-hidden relative">
+        {/* Sale Tag - Appears when sale is true */}
+        {sale && (
+          <div className="absolute bottom-2 right-2 z-10 bg-gradient-to-r from-pink-500 to-purple-500 text-white px-2 py-1 rounded-full text-xs font-bold uppercase tracking-wider shadow-lg">
+            Sale
+          </div>
+        )}
+
         <CardHeader className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -115,14 +120,14 @@ export const AdminProductCard = ({
             <div className="flex flex-col justify-between h-full w-full">
               <div className="flex items-center justify-end">
                 <div className="space-y-2">
-                  {product.discount > 0 ? (
+                  {(product.discount > 0 || (product.sale_discount > 0 && product.on_sale)) ? (
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
                         <span className="text-2xl font-bold text-gray-900">
-                          ${calculateDiscountedPrice(product.price, product.discount)}
+                          ${calculateDiscountedPrice(product.price, product.discount, product.sale_discount)}
                         </span>
                         <span className="px-2 py-1 text-xs font-semibold bg-green-100 text-green-700 rounded-full">
-                          {product.discount}% OFF
+                          {product.on_sale ? product.sale_discount : product.discount}% OFF
                         </span>
                       </div>
                       <div className="flex items-center gap-2">

@@ -5,7 +5,7 @@ import { Plus, Minus, X, ShoppingBag } from 'lucide-react';
 import { useCartContext } from '../contexts/useCartContext';
 
 
-export const CartItemCard = ({item, index, removeItem}) => {
+export const CartItemCard = ({item, index, removeItem, sale}) => {
 
         const [counter, setcounter] = useState(item.quantity);
 
@@ -21,9 +21,10 @@ export const CartItemCard = ({item, index, removeItem}) => {
             setcounter(counter + quant)
       } 
 
-      const calculateDiscountedPrice = (originalPrice, discount) => {
-        if (!discount) return originalPrice;
-        return originalPrice - (originalPrice * (discount / 100));
+      const calculateDiscountedPrice = (originalPrice, discount, sale_discount) => {
+        if(sale) return originalPrice - (originalPrice * (sale_discount / 100))
+        if (discount) return originalPrice - (originalPrice * (discount / 100));
+        return originalPrice ;
       };
       
   return (
@@ -72,15 +73,15 @@ export const CartItemCard = ({item, index, removeItem}) => {
                         </button>
                       </div>
                       <div className="text-right">
-                        {item.product_id.discount > 0 ? (
+                        {(item.product_id.discount > 0 || (item.product_id.on_sale && item.product_id.sale_discount > 0)) ? (
                           <>
                             <p className="text-sm line-through text-gray-500">
                               ${item.product_id.price.toFixed(2)}
                             </p>
                             <p className="text-lg font-medium text-red-600">
-                              ${calculateDiscountedPrice(item.product_id.price, item.product_id.discount).toFixed(2)}
+                              ${calculateDiscountedPrice(item.product_id.price, item.product_id.discount, item.product_id.sale_discount).toFixed(2)}
                             </p>
-                            <p className="text-sm text-red-600">-{item.product_id.discount}% OFF</p>
+                            <p className="text-sm text-red-600">-{(item.product_id. on_sale ? item.product_id.sale_discount : item.product_id.discount)}% OFF</p>
                           </>
                         ) : (
                           <p className="text-lg font-medium text-gray-900">

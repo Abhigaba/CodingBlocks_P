@@ -9,6 +9,7 @@ const {coupenRouter} = require('./routes/coupenRoute')
 const {wishRouter} = require('./routes/wishlishRoute');
 const {saleRouter} =  require('./routes/saleRoute')
 
+
 const cookieParser = require('cookie-parser')
 const cors = require('cors')
 const app = express();
@@ -40,6 +41,7 @@ app.use('/order', orderRouter);
 app.use('/coupen', coupenRouter);
 app.use('/wishlist', wishRouter);
 app.use('/sale', saleRouter);
+
 
 connectdb()
     .then(() => {

@@ -6,13 +6,16 @@ import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { Navbar } from '../components/Navbar';
 import { useAuthContext } from '../contexts/useAuthContext';
-import {MapPin, ShoppingBag, ChevronRight, Tag, X} from 'lucide-react';
+import { MapPin, ShoppingBag, Tag, X, ChevronRight } from 'lucide-react';
+
 import axios from 'axios';
 
 const CheckoutPage = () => {
   const { toast } = useToast();
   const router = useRouter();
-  const { cart } = useCartContext();
+  const { cart, setCart } = useCartContext();
+  const { info } = useAuthContext();
+  
   const [formData, setFormData] = useState({
     fullName: '',
     address: '',
@@ -40,28 +43,120 @@ const CheckoutPage = () => {
   };
 
   const handleSubmit = async (e) => {
-    
     e.preventDefault();
     setIsSubmitting(true);
 
     try {
-        await axios.post('http://localhost:3000/order/place', {
-          ...formData,
-          couponCode: appliedCoupon ? appliedCoupon.code : null,
-          orderTotal: calculateTotal()
-        });
-      toast({
-        title: "Order Placed Successfully!",
-        description: "Thank you for shopping with us.",
-      });
-      router.push('/order-confirmation');
+
+      const orderResponse = await axios.post('http://localhost:3000/order/place', {
+        amount: calculateTotal().toFixed(0) * 100, // Convert to paise for Razorpay
+        currency: 'INR',
+        receipt: `receipt_${Date.now()}`,
+        products: cart.products.map(item => ({
+          productId: item.product_id._id,
+          quantity: item.quantity,
+        }))
+      }, {withCredentials: true});
+
+      console.log(orderResponse)
+      const { order, key } = orderResponse.data;
+
+      // Initialize Razorpay payment
+      const options = {
+        key,
+        amount: order.amount,
+        currency: order.currency,
+        name: 'Solestyle',
+        description: `Order #${order.receipt}`,
+        order_id: order.id,
+        prefill: {
+          name: formData.fullName,
+          email: info.email,
+          contact: formData.phone
+        },
+        notes: {
+          address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.pincode}`
+        },
+        theme: {
+          color: '#3399cc'
+        },
+        handler: async function(response) {
+          try {
+            const verifyResponse = await axios.post('http://localhost:3000/order/verify-payment', {
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
+              orderDetails: {
+                userId: info._id,
+                
+                items: cart.products.map(item => ({
+                  product_id: item.product_id._id,
+                  price: calculateItemPrice(item.product_id.price, (cart.sale ? item.product_id.sale_discount : item.product_id.discount)),
+                  quantity: item.quantity,
+                })),
+                
+                total: calculateTotal().toFixed(2),
+                
+                paymentInfo: {
+                  id: response.razorpay_payment_id,
+                  status: 'completed'
+                }
+              },
+            }, {withCredentials : true});
+            
+            if (verifyResponse.data.success) {
+              // Clear cart on successful payment
+              setCart({ products: [] });
+              
+              // Navigate to success page with order details
+              router.push('/Order');
+              
+              toast({
+                title: "Order Placed Successfully!",
+                description: "Thank you for shopping with us.",
+              });
+
+            } else {
+              
+              toast({
+                title: "Payment Failed",
+                description: verifyResponse.data.message || "Payment verification failed",
+                variant: "destructive"
+              });
+            }
+          } catch (error) {
+            router.push('/order-failure');
+            
+            toast({
+              title: "Payment Error",
+              description: error.response?.data?.message || "Something went wrong with the payment",
+              variant: "destructive"
+            });
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            setIsSubmitting(false);
+            toast({
+              title: "Payment Cancelled",
+              description: "You have cancelled the payment process",
+              variant: "destructive"
+            });
+          }
+        }
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+      
     } catch (error) {
       toast({
         title: "Error",
-        description: "Something went wrong. Please try again.",
+        description: error.response?.data?.message || "Something went wrong. Please try again.",
         variant: "destructive"
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -79,24 +174,24 @@ const CheckoutPage = () => {
     setIsValidatingCoupon(true);
     try {
       const discountProducts = cart.products.map((item) => {
-        return {product_id : item.product_id._id, quantity: item.quantity}
-      })
+        return {product_id: item.product_id._id, quantity: item.quantity}
+      });
 
-      const response = await axios.post(`http://localhost:3000/coupen/apply/${couponCode}`, {products: discountProducts}, {withCredentials: true});
-      console.log(response.data)
-
+      const response = await axios.post(`/api/apply-coupon`, {
+        code: couponCode,
+        products: discountProducts
+      }, {withCredentials: true});
       
-      setAppliedCoupon({code:couponCode ,discountedAmount: response.data.discountedAmount});
-        toast({
-          title: "Coupon Applied!",
-          description: `${response.data.discountedAmount}% discount has been applied to your order.`,
-        });
+      setAppliedCoupon({code: couponCode, discountedAmount: response.data.discountedAmount});
+      toast({
+        title: "Coupon Applied!",
+        description: `${response.data.discountedAmount}% discount has been applied to your order.`,
+      });
       
     } catch (error) {
-      console.log(error)
       toast({
         title: "Error",
-        description: "Failed to validate coupon. Please try again.",
+        description: error.response?.data?.message || "Failed to validate coupon. Please try again.",
         variant: "destructive"
       });
     } finally {
@@ -120,13 +215,15 @@ const CheckoutPage = () => {
   };
   
   useEffect(() => {
-    setSubtotal(cart.products.reduce((sum, item) => 
-      sum + calculateItemPrice(item.product_id.price, (cart.sale ? item.product_id.sale_discount  : item.product_id.discount)) * item.quantity, 0))
+    if (cart.products && cart.products.length > 0) {
+      setSubtotal(cart.products.reduce((sum, item) => 
+        sum + calculateItemPrice(item.product_id.price, (cart.sale ? item.product_id.sale_discount : item.product_id.discount)) * item.quantity, 0));
+    }
   }, [cart]);
 
   const calculateDiscount = () => {
     if (!appliedCoupon) return 0;
-    return (appliedCoupon.discountedAmount);
+    return (subtotal * appliedCoupon.discountedAmount / 100);
   };
 
   const calculateTotal = () => {
@@ -136,9 +233,20 @@ const CheckoutPage = () => {
     return subtotal + shipping + tax - discount;
   };
 
+  // Add a script loader for Razorpay
+  useEffect(() => {
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    document.body.appendChild(script);
+    
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
+
   return (
     <>    
-    <Navbar></Navbar>
     <div className="min-h-screen bg-gray-200 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -238,11 +346,11 @@ const CheckoutPage = () => {
 
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !cart.products || cart.products.length === 0}
                   className={`w-full flex items-center justify-center px-6 py-3 border border-transparent rounded-md
                     text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700
                     focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500
-                    transition-colors duration-200 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                    transition-colors duration-200 ${isSubmitting || !cart.products || cart.products.length === 0 ? 'opacity-75 cursor-not-allowed' : ''}`}
                 >
                   {isSubmitting ? (
                     <span className="flex items-center">
@@ -283,7 +391,7 @@ const CheckoutPage = () => {
                     <div>
                       <span className="text-green-800 font-medium">{appliedCoupon.code}</span>
                       <p className="text-sm text-green-600">
-                        {appliedCoupon.discountedAmount} discount applied
+                        {appliedCoupon.discountedAmount}% discount applied
                       </p>
                     </div>
                     <button
@@ -323,12 +431,12 @@ const CheckoutPage = () => {
               </div>
 
               <div className="space-y-4">
-                {cart.products.map((item, index) => (
+                {cart.products && cart.products.map((item, index) => (
                   <div key={index} className="flex items-center space-x-4">
                     <div className="h-16 w-16 bg-gray-100 rounded-md flex items-center justify-center">
                       <img
                         src={item.product_id.imageUrl}
-                        alt={item.name}
+                        alt={item.product_id.name}
                         className="h-12 w-12 object-cover"
                       />
                     </div>
@@ -336,7 +444,9 @@ const CheckoutPage = () => {
                       <h3 className="text-sm font-medium text-gray-900">{item.product_id.name || 'Product Name'}</h3>
                       <p className="text-sm text-gray-500">Quantity: {item.quantity || 1}</p>
                     </div>
-                    <p className="text-sm font-medium text-gray-900">${calculateItemPrice(item.product_id.price, (cart.sale ? item.product_id.sale_discount : item.product_id.discount))*item.quantity.toFixed(2) || '99.99'}</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      ${(calculateItemPrice(item.product_id.price, (cart.sale ? item.product_id.sale_discount : item.product_id.discount)) * item.quantity).toFixed(2)}
+                    </p>
                   </div>
                 ))}
 
@@ -348,7 +458,7 @@ const CheckoutPage = () => {
                   
                   {appliedCoupon && (
                     <div className="flex justify-between text-sm text-green-600">
-                      <span>Discount ({appliedCoupon.discountedAmount})</span>
+                      <span>Discount ({appliedCoupon.discountedAmount}%)</span>
                       <span>-${calculateDiscount().toFixed(2)}</span>
                     </div>
                   )}
@@ -376,31 +486,33 @@ const CheckoutPage = () => {
   );
 };
 
-const page = () => {
-        const router = useRouter();
-        const {info} = useAuthContext()
+const Page = () => {
+  const router = useRouter();
+  const { info } = useAuthContext();
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
-        const [shouldRedirect, setShouldRedirect] = useState(false)
+  useEffect(() => {
+    if (!info || !info._id) {
+      setShouldRedirect(true);
+    }
+  }, [info]);
 
-        useEffect(() => {
-          if (!info._id) {
-            setShouldRedirect(true)
-          }
-        }, [info?._id])
+  useEffect(() => {
+    if (shouldRedirect) {
+      router.replace('/Login');
+    }
+  }, [shouldRedirect, router]);
 
-        useEffect(() => {
-          if (shouldRedirect) {
-            router.replace('./')
-          }
-        }, [shouldRedirect, router])
-
-        if (!info._id) {
-          return null
-        }
+  if (shouldRedirect) {
+    return null;
+  }
 
   return (
-    <><CheckoutPage /></>
-  )
-}
+    <>
+      <Navbar />
+      <CheckoutPage />
+    </>
+  );
+};
 
-export default page
+export default Page;

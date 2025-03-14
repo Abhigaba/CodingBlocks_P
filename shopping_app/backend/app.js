@@ -36,7 +36,7 @@ app.use(express.urlencoded({ extended: true }));
 const allowedOrigins = ["http://localhost:3000", "http://localhost:3001"];
 
 app.use(cors({
-  origin: 'http://localhost:3001',
+  origin: ['http://localhost:3001', 'http://localhost:5173'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization']
@@ -70,14 +70,16 @@ io.on('connection' , (socket) => {
 
     socket.on("sendMessage", async ({ chatId, sender, text }) => {
       try {
+        
 
         const chat = await Chat.findById(chatId);
         if (!chat) return;
-  
+
+        console.log(sender)
         chat.messages.push({ sender, text });
         await chat.save();
   
-        // Send message to all in the room
+
         io.to(chatId).emit("receiveMessage", { sender, text });
       } catch (error) {
           io.to(chatId.emit("Message failed to send"));
@@ -85,6 +87,7 @@ io.on('connection' , (socket) => {
     });
   
     socket.on("disconnect", () => {
+      
       console.log("User disconnected");
     });
   

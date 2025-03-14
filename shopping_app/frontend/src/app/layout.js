@@ -5,6 +5,8 @@ import { Toaster } from "@/components/ui/toaster"
 import { ProductContextProvider } from "./contexts/useProductConext";
 import { AuthProvider } from "./contexts/useAuthContext";
 import { CartProvider } from "./contexts/useCartContext";
+import { SocketProvider } from "./contexts/useSocket";
+import ChatWidget from "./components/ChatWidget";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,13 +29,18 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <SocketProvider>
       <AuthProvider>
         <ProductContextProvider>
           <CartProvider>
+
         {children}
+
+        <ChatWidget />
         </CartProvider>
         </ProductContextProvider></AuthProvider>
         <Toaster />
+        </SocketProvider>
       </body>
     </html>
   );

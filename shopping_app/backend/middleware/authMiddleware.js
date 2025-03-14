@@ -8,21 +8,20 @@ const authMiddle = async (req, res, next) => {
         const {token} = req.cookies;
         
         if (!token) { 
-            throw new Error('Token expired');
+            return res.status(401).json({message: 'Token expired'});
         }
 
         const decoded = jwt.verify(token, 'shhhhh') 
 
         const user = await suser.findById(decoded); 
         if (!user) { 
-            throw new Error('Session Expired');
+            return res.status(400).send('Token expired');
         }
         req.user = user ;
         next();
     }
     catch(error) {
-        console.log(error)
-        res.status(400).send(error)
+        res.json({message: error.message})
     }
 
 }

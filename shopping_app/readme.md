@@ -139,10 +139,8 @@ A comprehensive, microservices-based e-commerce platform built with the MERN (Mo
 - Optimized database queries
 
 ## 🚧 Future Roadmap
-- [ ] Implement payment gateway integration
 - [ ] Add advanced search and filtering
 - [ ] Create admin analytics dashboard
-- [ ] Implement user wishlist
 - [ ] Add product recommendations
 
 ## 📝 Contributing
